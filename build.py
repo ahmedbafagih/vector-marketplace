@@ -1,6 +1,7 @@
 from pathlib import Path
-import re, subprocess, shutil, plistlib, sys, json, zipfile, hashlib
+import re, subprocess, shutil, plistlib, sys, json, zipfile, hashlib, platform
 ROOT=Path(__file__).resolve().parent
+target=platform.machine()+'-apple-macos14.0'
 version=json.loads((ROOT/'Extension/manifest.json').read_text())['version']
 source=ROOT/'Template.html'
 s=source.read_text()
@@ -36,9 +37,9 @@ if (contents/'Resources').exists():shutil.rmtree(contents/'Resources')
 shutil.copytree(ROOT/'Web',contents/'Resources')
 plist={'CFBundleName':'Vector','CFBundleDisplayName':'Vector','CFBundleIdentifier':'com.ahmed.vector','CFBundleVersion':version,'CFBundleShortVersionString':version,'CFBundleExecutable':'Vector','CFBundlePackageType':'APPL','LSMinimumSystemVersion':'14.0','NSHighResolutionCapable':True,'NSPrincipalClass':'NSApplication','NSSupportsAutomaticTermination':False}
 (contents/'Info.plist').write_bytes(plistlib.dumps(plist))
-subprocess.run(['swiftc','-swift-version','5','-O','-framework','Cocoa','-framework','CoreLocation','-framework','MapKit','-framework','WebKit','-framework','ImageIO','-framework','UniformTypeIdentifiers','-framework','UserNotifications','-lsqlite3',str(ROOT/'Shared/Wire.swift'),*[str(p) for p in sorted((ROOT/'Sources').glob('*.swift'))],'-o',str(contents/'MacOS/Vector')],check=True)
+subprocess.run(['swiftc','-target',target,'-swift-version','5','-O','-framework','Cocoa','-framework','CoreLocation','-framework','MapKit','-framework','WebKit','-framework','ImageIO','-framework','UniformTypeIdentifiers','-framework','UserNotifications','-lsqlite3',str(ROOT/'Shared/Wire.swift'),*[str(p) for p in sorted((ROOT/'Sources').glob('*.swift'))],'-o',str(contents/'MacOS/Vector')],check=True)
 shutil.copytree(ROOT/'Extension',contents/'Resources/Extension',dirs_exist_ok=True)
-subprocess.run(['swiftc','-O',str(ROOT/'Shared/Wire.swift'),str(ROOT/'NativeHost/main.swift'),'-o',str(contents/'MacOS/VectorChromeHost')],check=True)
+subprocess.run(['swiftc','-target',target,'-O',str(ROOT/'Shared/Wire.swift'),str(ROOT/'NativeHost/main.swift'),'-o',str(contents/'MacOS/VectorChromeHost')],check=True)
 subprocess.run(['codesign','--force','--deep','--sign','-',str(app)],check=True)
 # The review ZIP and app companion always come from the same build.
 archive=ROOT/'build'/f'Vector-Marketplace-Companion-{version}.zip'
