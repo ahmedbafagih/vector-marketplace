@@ -35,6 +35,9 @@ html='<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" con
 app=ROOT/'build/Vector.app';contents=app/'Contents';(contents/'MacOS').mkdir(parents=True,exist_ok=True)
 if (contents/'Resources').exists():shutil.rmtree(contents/'Resources')
 shutil.copytree(ROOT/'Web',contents/'Resources')
+shutil.copytree(ROOT/'licenses',contents/'Resources/ThirdPartyLicenses')
+for notice in ['LICENSE','PRIVACY.md','THIRD_PARTY_NOTICES.md']:
+    shutil.copy2(ROOT/notice,contents/'Resources'/notice)
 plist={'CFBundleName':'Vector','CFBundleDisplayName':'Vector','CFBundleIdentifier':'com.ahmed.vector','CFBundleVersion':version,'CFBundleShortVersionString':version,'CFBundleExecutable':'Vector','CFBundlePackageType':'APPL','LSMinimumSystemVersion':'14.0','NSHighResolutionCapable':True,'NSPrincipalClass':'NSApplication','NSSupportsAutomaticTermination':False}
 (contents/'Info.plist').write_bytes(plistlib.dumps(plist))
 subprocess.run(['swiftc','-target',target,'-swift-version','5','-O','-framework','Cocoa','-framework','CoreLocation','-framework','MapKit','-framework','WebKit','-framework','ImageIO','-framework','UniformTypeIdentifiers','-framework','UserNotifications','-lsqlite3',str(ROOT/'Shared/Wire.swift'),*[str(p) for p in sorted((ROOT/'Sources').glob('*.swift'))],'-o',str(contents/'MacOS/Vector')],check=True)
