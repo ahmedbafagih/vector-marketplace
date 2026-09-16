@@ -26,6 +26,8 @@ It cannot guarantee resale demand, seller responses, successful purchases, or pr
 
 ## Build and test
 
+For an Apple Silicon Mac, a locally built app and matching companion are available on the [testing preview release page](https://github.com/ahmedbafagih/vector-marketplace/releases/tag/v0.2.23-preview.1). Download `Vector-0.2.23-macOS-arm64-preview.zip`, unzip it, then follow **First run** below. Checksums accompany the downloads. The app is not notarized; building from source is also supported.
+
 ```sh
 git clone https://github.com/ahmedbafagih/vector-marketplace.git
 cd vector-marketplace
@@ -64,7 +66,7 @@ This repository starts with a clean source history. It excludes development sess
 
 ## Testing and limitations
 
-The JavaScript suite covers simulated native/browser/AI flows, conversation identity, reply deduplication, spending rules, connection recovery, and UI state. Passing those tests does not prove a Facebook message was delivered. [TESTING.md](TESTING.md) describes the checks and a tester checklist. GitHub Actions runs the suite and builds a macOS app from source.
+The JavaScript suite covers simulated native/browser/AI flows, conversation identity, reply deduplication, spending rules, connection recovery, and UI state. Passing those tests does not prove a Facebook message was delivered. [TESTING.md](TESTING.md) describes the checks and a tester checklist. GitHub Actions runs the suite, builds a macOS app from source, and checks native persistence in an isolated workspace.
 
 ## Project layout
 
