@@ -1,0 +1,12 @@
+const fs=require('fs'),vm=require('vm'),assert=require('assert/strict');
+const source=fs.readFileSync(__dirname+'/../Web/attention.js','utf8'),lines=source.split('\n'),pick=name=>lines.find(line=>line.startsWith('function '+name+'('));
+const row={id:1,view:'Selling'},work={monitorPaused:false,enabled:false};
+const c=vm.createContext({nativeState:{jobs:[]},laneEnabled:{Selling:true},workFor:()=>work,taskNames:{sync:'Checking messages'}});
+vm.runInContext([pick('actionableJobIssue'),pick('jobScopeKey'),pick('latestItemJobs'),pick('sellingStatus')].join('\n'),c);
+c.nativeState.jobs=[{itemId:1,kind:'sync',state:'needs_you',note:'Stopped. Reconnect Chrome and review Marketplace before retrying.'}];
+assert.equal(c.sellingStatus(row).messageIssue,false,'a user-stopped historical task is not presented as a current listing failure');
+c.nativeState.jobs.push({itemId:1,kind:'sync',state:'needs_you',note:'Marketplace document is not ready yet.'});
+assert.equal(c.sellingStatus(row).messageIssue,true,'the latest unresolved operational error remains actionable');
+c.nativeState.jobs.push({itemId:1,kind:'reply',leadURL:'https://www.facebook.com/messages/t/1',state:'needs_you',note:'Composer unavailable.'},{itemId:1,kind:'reply',leadURL:'https://www.facebook.com/messages/t/2',state:'needs_you',note:'Composer unavailable.'});
+assert.equal(c.sellingStatus(row).messageIssueCount,3,'separate buyer conversations are not collapsed into one listing warning');
+console.log('PASS attention status excludes stopped history and counts actionable buyer conversations separately');

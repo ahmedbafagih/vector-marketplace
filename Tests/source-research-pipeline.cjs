@@ -1,0 +1,27 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const source=fs.readFileSync(__dirname+'/../Web/sourcing.js','utf8');
+const body=source.slice(source.indexOf('function sourceSearchURL('),source.indexOf('const hydrateBeforeSourcing='));
+const candidate='https://www.facebook.com/marketplace/item/100/',candidate2='https://www.facebook.com/marketplace/item/101/',comp1='https://www.facebook.com/marketplace/item/200/',comp2='https://www.facebook.com/marketplace/item/300/';
+const feed={url:'https://www.facebook.com/marketplace/search',text:'',loading:[],listings:[{url:candidate,text:'CA$50\nAcme X100\nToronto, ON'},{url:candidate2,text:'CA$60\nAcme X100\nToronto, ON'}]};
+const candidatePage={url:candidate,text:'Acme X100\nCA$50\nUsed - Good\nToronto, ON',loading:[],listings:[{url:candidate,text:'Acme X100\nCA$50',image:'https://scontent.fbcdn.net/candidate.jpg'}]};
+const comparisonFeed={url:'https://www.facebook.com/marketplace/search?query=Acme%20X100',text:'',loading:[],listings:[{url:comp1,text:'Acme X100\nCA$140'},{url:comp2,text:'Acme X100\nCA$150'},{url:'https://www.facebook.com/marketplace/item/400/',text:'Different model\nCA$80'}]};
+const pages=[candidatePage,comparisonFeed,{url:comp1,text:'Acme X100\nCA$140\nUsed - Good',loading:[],listings:[]},{url:comp2,text:'Acme X100\nCA$150\nUsed - Like New',loading:[],listings:[]},{...candidatePage,url:candidate2,listings:[{url:candidate2,text:'Acme X100\nCA$60',image:'https://scontent.fbcdn.net/candidate2.jpg'}]},comparisonFeed,{url:comp1,text:'Acme X100\nCA$140\nUsed - Good',loading:[],listings:[]},{url:comp2,text:'Acme X100\nCA$150\nUsed - Like New',loading:[],listings:[]}];
+let inferenceCalls=0,observationIndex=0;const prompts=[],actions=[];
+const finalResult={listings:[{name:'Acme X100',url:candidate,ask:50,resale:105,costs:15,category:'Marketplace',location:'Toronto, ON',condition:'Used - Good',distanceKm:0,evidence:'Observed candidate and asking-price comparisons.',photoURL:'https://scontent.fbcdn.net/candidate.jpg',assessment:{model:'Acme X100',quote:'Acme X100\nCA$50\nUsed - Good',size:'One shelf',risks:[],comparables:[{url:comp1,ask:140,quote:'Acme X100\nCA$140'},{url:comp2,ask:150,quote:'Acme X100\nCA$150'}]}}]};
+const c=vm.createContext({URL,Map,Set,JSON,String,Error,Array,Object,Number,Math,encodeURIComponent,maxPrice:300,auto:{categories:['All'],condition:'Good or better'},intakePolicy:{location:'Toronto'},radius:20,stopGeneration:0,saveSoon(){},delay:async()=>{},jobAllowed:()=>true,learnSourceQuery(){},sourceDiscountLimit:()=>20,sourceSearchCity:()=> 'Toronto, ON',objectSchema:properties=>({type:'object',properties}),sourceURLKey:u=>new URL(u).origin+new URL(u).pathname,validListingURL:u=>/^https:\/\/www\.facebook\.com\/marketplace\/item\/\d+\/$/.test(u),sourceCardSummary:x=>String(x.text||''),sourceModelMatch:(model,text)=>model==='Acme X100'&&text.includes('Acme X100'),sourcingPolicy:()=>({space:'One shelf'}),nativeCall:async(method,args)=>{if(method==='browserAction'){actions.push(args);return{}}if(method==='observe')return pages[observationIndex++];throw Error('Unexpected native call')},inferJob:async(job,prompt)=>{prompts.push(prompt);inferenceCalls++;if(inferenceCalls===1)return {candidates:[{candidateURL:candidate,comparisonQuery:'Acme X100',reason:'Clear model and local price'},{candidateURL:candidate2,comparisonQuery:'Acme X100',reason:'Second strong bargain'}]};return {...finalResult,listings:finalResult.listings.map(x=>({...x,url:inferenceCalls===2?candidate:candidate2,ask:inferenceCalls===2?50:60}))}}});
+vm.runInContext(body,c);
+(async()=>{
+ const job={};const output=await c.researchSourceCandidates(job,'Acme tool',[{url:candidate,text:'CA$50 · Acme X100 · Toronto, ON'},{url:candidate2,text:'CA$60 · Acme X100 · Toronto, ON'}],feed,2);
+ assert.equal(inferenceCalls,3,'one selection and two final assessments are the only AI requests');
+ assert.equal(actions.length,8,'each candidate uses one detail page, one comparison feed and two comparison pages');
+ assert(actions.every(x=>x.action==='navigate'&&!x.allowCommit),'pipeline is read only');
+ assert(c.sourceSearchURL('Acme tool').includes('sortBy=creation_time_descend'),'candidate searches prioritize newly listed inventory');
+ assert(actions[1].url.includes('query=Acme%20X100'));assert(!actions[1].url.includes('maxPrice')&&!actions[1].url.includes('sortBy'),'resale comparisons stay broad and are not filtered by the buying budget');
+ assert.equal(output.evidence.length,9);
+ assert.equal(output.result.listings.length,2);
+ assert.equal(output.result.listings[0].assessment.comparables.length,2);
+ assert.deepEqual(Array.from(output.processedURLs),[candidate,candidate2]);
+ assert(prompts[1].includes('candidate')&&prompts[1].includes('comparisonPages'));
+ assert.equal(job.browserActions.length,8);
+ console.log('PASS sourcing research evaluates two selected candidates with bounded read-only navigation');
+})().catch(e=>{console.error(e);process.exitCode=1});

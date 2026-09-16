@@ -1,0 +1,13 @@
+const fs=require('fs'),vm=require('vm'),assert=require('assert/strict');
+const source=fs.readFileSync(__dirname+'/../Web/native.js','utf8'),calls=[];
+const c=vm.createContext({nativeReady:true,nativeState:{notificationKeys:[]},nativeCall:async(method,args)=>calls.push({method,args}),saveSoon(){}});
+vm.runInContext(source.slice(source.indexOf('function notifyOnce('),source.indexOf('function nativeDecorate(')),c);
+c.notifyOnce('pickup:1','Pickup ready','Chair at noon',1,'Pickups');
+c.notifyOnce('pickup:1','Pickup ready','Chair at noon',1,'Pickups');
+assert.equal(calls.length,1,'the same event creates one notification');
+assert.equal(calls[0].method,'notify');
+assert.equal(calls[0].args.itemId,1);
+assert.equal(calls[0].args.section,'Pickups');
+for(let i=0;i<240;i++)c.notifyOnce('event:'+i,'Notice','Body');
+assert(c.nativeState.notificationKeys.length<=200,'notification deduplication state remains bounded');
+console.log('PASS native notifications are event-deduplicated, actionable and storage-bounded');

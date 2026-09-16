@@ -1,0 +1,6 @@
+const fs=require('fs'),vm=require('vm'),assert=require('assert/strict');
+const listing={id:1,name:'Oak Chair',view:'Selling',importedLive:true,liveURL:'https://www.facebook.com/marketplace/item/1/'},work={enabled:true,leads:[]},jobs=[],queued=[];
+let preview='Historical message';
+const c=vm.createContext({Date,Map,Set,String,JSON,Error,Array,Object,rows:[listing],nativeState:{jobs},monitoringWanted:()=>true,workFor:()=>work,delay:async()=>{},saveSoon(){},queueJob:(kind,r,extra)=>queued.push({kind,itemId:r.id,...extra}),nativeCall:async method=>method==='observeInbox'?{url:'https://www.facebook.com/marketplace/inbox?targetTab=SELLER',inboxRows:[{label:'Alice row',person:'Alice',listing:'Oak Chair',preview}]}:{}});
+vm.runInContext(fs.readFileSync(__dirname+'/../Web/conversations.js','utf8'),c);
+(async()=>{await c.pollInbox({kind:'poll'});assert.equal(queued.length,0,'a fresh install fingerprints visible history without launching AI work');preview='A new message';await c.pollInbox({kind:'poll'});assert.equal(queued.length,1);assert.deepEqual(Array.from(queued[0].targetCandidateKeys),['alice|oak chair']);console.log('PASS first inbox check baselines historical rows and the next changed preview queues targeted work');})().catch(e=>{console.error(e);process.exitCode=1});

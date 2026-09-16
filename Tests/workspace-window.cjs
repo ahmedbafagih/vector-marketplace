@@ -1,0 +1,15 @@
+const fs=require('fs'),vm=require('vm'),assert=require('assert/strict');
+const events={addListener(){}},url='https://www.facebook.com/marketplace/inbox';
+let tab={id:7,windowId:1,active:false,url},win={id:1,state:'normal',tabs:[{id:7},{id:8}]},calls=[],stored={};
+const chrome={storage:{local:{get:async()=>({}),set:async value=>Object.assign(stored,value)}},action:{setBadgeText:async()=>{}},runtime:{onStartup:events,onInstalled:events,onMessage:events},tabs:{onRemoved:events,get:async id=>id===7?tab:{id,url:'https://www.facebook.com/messages/t/123/'},query:async()=>[],update:async(id,args)=>{calls.push(['tab',id,args]);Object.assign(tab,args);return tab},remove:async id=>calls.push(['remove',id])},windows:{get:async()=>win,create:async args=>{calls.push(['create',args]);return {id:2,tabs:[{id:7}]}},update:async(id,args)=>calls.push(['window',id,args])},scripting:{executeScript:async args=>[{result:{url:args.target.tabId===9?'https://www.facebook.com/messages/t/123/':tab.url,usable:true}}]}};
+const c=vm.createContext({chrome,URL,Date,Promise,Error,setTimeout,clearTimeout});vm.runInContext(fs.readFileSync(__dirname+'/../Extension/background.js','utf8'),c);
+(async()=>{await c.ensureWorkspace(7);assert.deepEqual(calls.map(x=>x[0]),['create']);assert.equal(calls[0][1].tabId,7);assert.equal(calls[0][1].focused,false,'background work must not focus its window');
+calls=[];tab.active=true;win.tabs=[{id:7}];await c.ensureWorkspace(7);assert.equal(calls.length,0,'reuse the existing dedicated window');
+await c.ensureWorkspace(7,true);assert.equal(calls[0][0],'window');assert.equal(calls[0][2].focused,true,'only explicit open focuses the window');
+calls=[];win.state='minimized';await c.ensureWorkspace(7);assert.equal(calls[0][2].state,'normal');assert.equal(calls[0][2].focused,false);
+calls=[];vm.runInContext('tabId=null',c);await c.openMarketplace(url);assert.equal(calls[0][0],'create');assert.equal(calls[0][1].url,url);assert.equal(calls[0][1].focused,false);
+calls=[];win.state='normal';vm.runInContext('tabId=7',c);await c.openMarketplace(url);assert.equal(calls.length,0,'an already-open destination must not reload');
+await c.openMarketplace(url+'?targetTab=SELLER');assert.equal(calls.length,1);assert.equal(calls[0][0],'tab');assert.equal(calls[0][2].url,url+'?targetTab=SELLER');assert.equal(calls[0][2].active,undefined);
+await assert.rejects(c.openMarketplace('https://example.com'),/outside Marketplace/);
+calls=[];chrome.tabs.query=async()=>[{id:9,url:'https://www.facebook.com/messages/t/123/'}];await c.adoptOpenedThread(7,new Set([7]));assert.equal(stored.marketplaceTabId,9);assert(calls.some(x=>x[0]==='remove'&&x[1]===7));
+console.log('PASS dedicated window creation, reuse, explicit focus, minimized recovery and navigation scope');})().catch(e=>{console.error(e);process.exitCode=1});

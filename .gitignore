@@ -1,0 +1,15 @@
+node_modules/
+build/
+.DS_Store
+.env
+.env.*
+*.sqlite*
+*.db
+*.log
+*.pem
+*.key
+*.p12
+*.pfx
+Runs/
+Backups/
+coverage/

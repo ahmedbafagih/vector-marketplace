@@ -1,0 +1,10 @@
+const fs=require('fs'),vm=require('vm'),assert=require('assert/strict');
+const text=fs.readFileSync(__dirname+'/../Web/native.js','utf8');
+const r={id:1,view:'Selling',liveURL:'https://www.facebook.com/marketplace/item/1/',importedLive:true},buying={id:2,view:'Buying',url:'https://www.facebook.com/marketplace/item/2/'},work={enabled:false,leads:[]},buyingWork={enabled:true,leads:[{url:'https://www.facebook.com/messages/t/2'}]},jobs=[];
+const c=vm.createContext({Date,rows:[r,buying],laneEnabled:{Selling:true,Buying:true},nativeState:{jobs},workFor:x=>x===r?work:buyingWork,queueJob:(kind,r,extra)=>jobs.push({kind,itemId:r?.id||null,state:'queued',...extra})});
+vm.runInContext(text.slice(text.indexOf('function monitoringWanted('),text.indexOf('async function tickWorker(')),c);
+c.scheduleConversationChecks(1000000);assert.equal(jobs.length,2);assert.deepEqual(jobs.map(j=>j.side),['Selling','Buying']);assert.equal(jobs[0].kind,'poll');assert.equal(jobs[0].itemId,null);assert.equal(work.enabled,false);c.scheduleConversationChecks(1000001);assert.equal(jobs.length,2);
+jobs.forEach(j=>j.state='done');c.scheduleConversationChecks(1059999);assert.equal(jobs.length,2);c.scheduleConversationChecks(1060001);assert.equal(jobs.length,4,'quiet monitoring checks both inboxes once per minute');
+c.nativeState.lastInboxChangeSelling=1060001;c.nativeState.nextInboxPollSelling=1075001;jobs.slice(-2).forEach(j=>j.state='done');c.scheduleConversationChecks(1074999);assert.equal(jobs.length,4);c.scheduleConversationChecks(1075002);assert.equal(jobs.filter(j=>j.side==='Selling').length,3,'recent selling activity checks every fifteen seconds');
+work.monitorPaused=true;assert.equal(c.monitoringWanted(r),false);work.enabled=true;assert.equal(c.monitoringWanted(r),true);work.closed=true;assert.equal(c.monitoringWanted(r),false);
+console.log('PASS buying and selling inbox polling, adaptive cadence, deduplication, explicit pause and closed-item exclusion');

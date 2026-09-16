@@ -1,0 +1,10 @@
+const fs=require('fs'),vm=require('vm'),assert=require('assert/strict');
+const event=()=>({listeners:[],addListener(f){this.listeners.push(f)},emit(x){for(const f of this.listeners)f(x)}});
+let port,replies=[],release,started=[];
+const chrome={storage:{local:{get:async()=>({reconnectEnabled:true,marketplaceTabId:1}),set:async()=>{}}},action:{setBadgeText:async()=>{}},alarms:{create(){},clear(){},onAlarm:event()},tabs:{get:async()=>({id:1,url:'https://www.facebook.com/marketplace/'}),onRemoved:event()},runtime:{getManifest:()=>({version:'0.2.1'}),connectNative(){return port={onMessage:event(),onDisconnect:event(),postMessage:x=>replies.push(x),disconnect(){}}},onMessage:event(),onStartup:event(),onInstalled:event()}};
+const c=vm.createContext({chrome,URL,Date,Promise,Error,setTimeout,clearTimeout});vm.runInContext(fs.readFileSync(__dirname+'/../Extension/background.js','utf8'),c);
+const tick=()=>new Promise(setImmediate);
+(async()=>{await tick();port.onMessage.emit({event:'ready'});const dispatch=c.dispatch;c.dispatch=async m=>{if(m.method==='status')return dispatch(m);started.push(m.id);if(m.id==='slow')await new Promise(r=>release=r);return {acted:true}};
+const send=(id,method,expiresAt=Date.now()+10000)=>port.onMessage.emit({id,method,expiresAt});
+send('slow','observe');await tick();send('second','action');send('health','status');send('expired','action',Date.now()-1);await tick();assert(replies.some(r=>r.id==='health'&&r.ok));assert.deepEqual(started,['slow']);release();await tick();await tick();assert.deepEqual(started,['slow','second']);assert(replies.some(r=>r.id==='expired'&&!r.ok&&r.error.includes('No action')));console.log('PASS health checks do not wait behind slow browser work; actions stay serialized; expired requests respond without executing');
+})().catch(e=>{console.error(e);process.exitCode=1});

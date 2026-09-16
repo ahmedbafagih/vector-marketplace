@@ -1,0 +1,31 @@
+name: Build and test
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  macos:
+    runs-on: macos-14
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: python3 scripts/privacy_check.py
+      - run: python3 build.py
+      - run: npm test
+      - name: Package preview
+        run: ditto -c -k --sequesterRsrc --keepParent build/Vector.app build/Vector-macOS-preview.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Vector-macOS-testing-preview
+          path: |
+            build/Vector-macOS-preview.zip
+            build/Vector-Marketplace-Companion-*.zip
+            build/release.json
+          retention-days: 14

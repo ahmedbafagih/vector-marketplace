@@ -1,0 +1,15 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const source=fs.readFileSync(__dirname+'/../Web/native.js','utf8');
+const c=vm.createContext({Date,Number,Math,Error,auto:{sourcing:{aiDailyLimit:10}},nativeState:{metrics:{}}});
+for(const name of ['sourceAIUsage','countSourceAI'])vm.runInContext(source.split('\n').find(line=>line.startsWith('function '+name+'(')),c);
+const today=new Date().toLocaleDateString('en-CA');
+c.nativeState.metrics={sourceAIDay:today,sourceAIToday:9,sourceAICalls:40};
+assert.deepEqual(JSON.parse(JSON.stringify(c.sourceAIUsage())),{day:today,used:9,limit:10,remaining:1});
+c.countSourceAI();
+assert.equal(c.nativeState.metrics.sourceAIToday,10);
+assert.equal(c.nativeState.metrics.sourceAICalls,41);
+assert.throws(()=>c.countSourceAI(),/Daily sourcing AI request limit reached/);
+c.nativeState.metrics.sourceAIDay='2000-01-01';
+assert.equal(c.sourceAIUsage().used,0);
+assert.equal(c.sourceAIUsage().remaining,10);
+console.log('PASS sourcing AI requests stop at the daily cap and reset on the next local day');

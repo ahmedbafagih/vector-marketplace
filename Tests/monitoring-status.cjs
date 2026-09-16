@@ -1,0 +1,16 @@
+const fs=require('fs'),vm=require('vm'),assert=require('assert/strict');
+const source=fs.readFileSync(__dirname+'/../Web/operations.js','utf8');
+const c=vm.createContext({nativeState:{jobs:[{kind:'sync',itemId:1,state:'needs_you'}],connected:true},rows:[{id:1,view:'Selling'}],laneEnabled:{Buying:false,Selling:true},monitoringWanted:()=>true,jobAllowed:()=>true,taskNames:{sync:'Checking messages'}});
+vm.runInContext(source.slice(source.indexOf('function coreActivity'),source.indexOf('const openSourcingSettings')),c);
+assert.equal(c.coreActivity().lanes.Selling,'Monitoring','lightweight monitoring remains active while a historical read needs review');
+assert.equal(c.coreActivity().label,'Monitoring messages');
+c.nativeState.jobs.push({kind:'sync',itemId:1,state:'done'});
+assert.equal(c.coreActivity().lanes.Selling,'Monitoring','a historical failure must not block a newer successful check');
+c.nativeState.jobs.push({kind:'sync',itemId:1,state:'failed'});
+c.rows.push({id:2,view:'Selling'});
+assert.equal(c.coreActivity().lanes.Selling,'Monitoring','another eligible listing can still monitor');
+c.nativeState.jobs.push({kind:'sync',itemId:2,state:'running'});
+assert.equal(c.coreActivity().lanes.Selling,'Checking messages');
+c.nativeState.jobs.at(-1).state='needs_you';c.laneEnabled.Selling=false;
+assert.equal(c.coreActivity().lanes.Selling,'Paused');
+console.log('PASS monitoring status stays truthful while historical reads, recovery, active work and pauses remain separate');

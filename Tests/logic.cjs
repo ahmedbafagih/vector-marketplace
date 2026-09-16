@@ -1,0 +1,20 @@
+const fs=require('node:fs');const vm=require('node:vm');const assert=require('node:assert/strict');
+const code=fs.readFileSync(require('node:path').join(__dirname,'../Web/native.js'),'utf8');
+const scope={URL,Error,Number,JSON,rows:[],nativeState:{scanning:true,provider:'Codex'},auto:{},sellingRules:{},radius:40,maxPrice:500,minProfit:20,intakePolicy:{location:'Toronto'},laneEnabled:{Buying:true,Selling:true},workFor:r=>r.work||{enabled:true}};
+for(const name of ['validListingURL','validThreadURL','validateReply','safeImageSource','jobAllowed','itemRevision']){const line=code.split('\n').find(l=>l.startsWith('function '+name+'('));assert(line,name+' missing');vm.runInNewContext(line,scope)}
+let checks=0;const test=(name,fn)=>{fn();checks++;console.log('PASS '+name)};
+test('listing URL validation',()=>{assert(scope.validListingURL('https://www.facebook.com/marketplace/item/123/'));assert(!scope.validListingURL('https://facebook.com.evil.test/marketplace/item/123/'));assert(!scope.validListingURL('javascript:alert(1)'));assert(!scope.validListingURL('https://www.facebook.com/marketplace/create/item'))});
+test('conversation URL validation',()=>{assert(scope.validThreadURL('https://www.facebook.com/messages/t/123'));assert(!scope.validThreadURL('https://example.com/messages/t/123'))});
+test('seller price floor',()=>{assert.throws(()=>scope.validateReply({message:'I can do $50',price:50},{buying:false,floor:80,ask:100,priceEnabled:true}));scope.validateReply({message:'I can do $80',price:80},{buying:false,floor:80,ask:100,priceEnabled:true})});
+test('buyer price ceiling',()=>assert.throws(()=>scope.validateReply({message:'I can pay $150',price:150},{buying:true,ceiling:100,ask:120,priceEnabled:true})));
+test('disabled negotiation',()=>assert.throws(()=>scope.validateReply({message:'I can do $90',price:90},{buying:false,floor:80,ask:100,priceEnabled:false})));
+test('message amount overrides claimed amount',()=>assert.throws(()=>scope.validateReply({message:'I can pay $200',price:50},{buying:true,ceiling:100,ask:120,priceEnabled:true})));
+test('payment requests held',()=>assert.throws(()=>scope.validateReply({message:'Send a deposit',price:0},{buying:false,floor:80,ask:100,priceEnabled:true})));
+test('selling meeting link must match the saved location',()=>{const link='https://www.google.com/maps/search/?api=1&query=Cafe%20145';scope.validateReply({message:'Meet here: '+link,price:100},{buying:false,floor:80,ask:100,priceEnabled:true,meetingLink:link,inPersonOnly:true});assert.throws(()=>scope.validateReply({message:'Meet here: https://www.google.com/maps/search/?api=1&query=Another%20Place',price:100},{buying:false,floor:80,ask:100,priceEnabled:true,meetingLink:link,inPersonOnly:true}));assert.throws(()=>scope.validateReply({message:'I can deliver it tomorrow.',price:100},{buying:false,floor:80,ask:100,priceEnabled:true,meetingLink:link,inPersonOnly:true}))});
+test('unsafe image protocols rejected',()=>{assert.equal(scope.safeImageSource('javascript:alert(1)'), '');assert.equal(scope.safeImageSource('data:image/svg+xml,<svg>'), '');assert.equal(scope.safeImageSource('https://example.com/a.jpg'), '')});
+test('valid photo source',()=>assert.equal(scope.safeImageSource('data:image/png;base64,AAAA'), 'data:image/png;base64,AAAA'));
+test('paused selling blocks publication',()=>{scope.laneEnabled.Selling=false;assert(!scope.jobAllowed({kind:'publish'}));scope.laneEnabled.Selling=true;assert(scope.jobAllowed({kind:'publish'}))});
+test('paused buying blocks scan',()=>{scope.laneEnabled.Buying=false;assert(!scope.jobAllowed({kind:'scan'}));scope.laneEnabled.Buying=true});
+test('paused listing blocks reply',()=>{scope.rows.push({id:1,view:'Selling',work:{enabled:false}});assert(!scope.jobAllowed({kind:'reply',itemId:1}))});
+test('inventory revisions change with price',()=>{scope.rows[0].ask=80;const before=scope.itemRevision({itemId:1});scope.rows[0].ask=90;assert.notEqual(before,scope.itemRevision({itemId:1}))});
+console.log(checks+' desktop logic checks passed');

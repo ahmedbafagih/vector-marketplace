@@ -1,0 +1,11 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const {JSDOM}=require(process.env.VECTOR_JSDOM||'jsdom');
+const page=new JSDOM('<div id="composer" contenteditable="true" role="textbox" aria-label="Write a message"></div>',{url:'https://www.facebook.com/messages/t/123',runScripts:'outside-only'});
+const w=page.window,composer=w.document.getElementById('composer'),noop={addListener(){}};
+Object.defineProperty(composer,'isContentEditable',{value:true});
+Object.defineProperty(composer,'innerText',{get(){return this.textContent},set(value){this.textContent=value}});
+let c;
+const chrome={runtime:{onMessage:noop,onStartup:noop,onInstalled:noop},tabs:{onRemoved:noop,get:async()=>({id:1,url:w.location.href,status:'complete'})},storage:{local:{get:async()=>({}),set:async()=>{}}},action:{setBadgeText:async()=>{}},scripting:{executeScript:async args=>{c.injectArgs=args.args;return [{result:vm.runInContext(`(${args.func.toString()})(...injectArgs)`,c)}]}}};
+c=vm.createContext({chrome,URL,Date,Promise,setTimeout,location:w.location,document:w.document,getSelection:w.getSelection.bind(w),InputEvent:w.InputEvent,Event:w.Event,HTMLTextAreaElement:w.HTMLTextAreaElement,HTMLInputElement:w.HTMLInputElement});
+vm.runInContext(fs.readFileSync(__dirname+'/../Extension/background.js','utf8'),c);
+(async()=>{await new Promise(setImmediate);c.nodeMap={44:composer};c.fixture={url:w.location.href,nodes:[{id:44,label:'Write a message',kind:'control'}]};vm.runInContext('ready=true;tabId=1;epoch=7;globalThis.vectorElements=nodeMap;observation=fixture',c);const result=await vm.runInContext(`dispatch(${JSON.stringify({method:'action',args:{action:'fill',id:44,value:'Exact approved reply',epoch:7,allowCommit:true}})})`,c);assert.equal(result.acted,true);assert.equal(composer.textContent,'Exact approved reply');page.window.close();console.log('PASS contenteditable composer receives and verifies the exact approved reply');})().catch(error=>{console.error(error);process.exitCode=1});

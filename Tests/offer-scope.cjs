@@ -1,0 +1,7 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const source=fs.readFileSync(__dirname+'/../Web/native.js','utf8'),agentSource=source.slice(source.indexOf('async function browserAgent('),source.indexOf('async function executeJob('));
+const listing='https://www.facebook.com/marketplace/item/78/';let browserActions=0;
+const observation={url:listing,text:'Iphone 12 pro',nodes:[{id:19,label:'Inbox'}],listings:[],epoch:1};
+const c=vm.createContext({Date,Map,JSON,Error,Array,Object,Number,stopGeneration:0,itemRevision:()=>1,jobAllowed:()=>true,settings:false,actionSchema:{},saveSoon(){},signalCore(){},delay:async()=>{},marketplaceID:url=>String(url||'').match(/item\/(\d+)/)?.[1]||'',validListingURL:url=>url===listing,validThreadURL:url=>/^https:\/\/www\.facebook\.com\/messages\/t\//.test(url||''),normalizedInboxText:value=>String(value||'').toLowerCase(),nativeCall:async method=>{if(method==='observe')return observation;browserActions++;return{}},infer:async()=>({action:'click',id:19,note:'Open Inbox'})});
+vm.runInContext(agentSource,c);
+(async()=>{await assert.rejects(c.browserAgent({},'Send offer',{commit:true,message:'Hi, I can offer $184.',target:listing,listingTarget:listing,listingTitle:'Iphone 12 pro'}),/Offer stayed safe/);assert.equal(browserActions,0,'unsafe navigation is rejected before Chrome acts');console.log('PASS purchase outreach cannot leave the selected listing for an unrelated inbox conversation')})().catch(error=>{console.error(error);process.exitCode=1});

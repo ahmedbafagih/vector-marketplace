@@ -1,0 +1,24 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const source=fs.readFileSync(__dirname+'/../Web/conversations.js','utf8');
+const listingURL='https://www.facebook.com/marketplace/item/99/';
+const threadURL='https://www.facebook.com/messages/t/123';
+let navigations=[],observations=[],agentCalls=0;
+const work={leads:[{id:'Jon',url:threadURL,last:'Earlier message',sent:1}],conversationProgress:{candidates:[{key:'jon|oak chair',person:'Jon',label:'Jon Oak chair'}],reads:{},censusComplete:false,coverage:''}};
+const c=vm.createContext({Date,Map,Set,String,JSON,Error,Array,Object,nativeState:{jobs:[],metrics:{}},workFor:()=>work,validThreadURL:url=>/^https:\/\/www\.facebook\.com\/messages\/t\/\d+$/.test(url||''),marketplaceID:url=>String(url||'').match(/item\/(\d+)/)?.[1]||'',delay:async()=>{},saveSoon(){},render(){},recordConversationLeads(){},nativeCall:async(method,args)=>{if(method==='browserAction'&&args.action==='navigate'){navigations.push(args.url);return{}}if(method==='observe')return observations.shift()||{url:threadURL,nodes:[],text:'New reply',listings:[{url:listingURL}]};throw Error('Unexpected '+method)},browserAgent:async()=>{agentCalls++;return{result:{complete:true,coverage:'current conversation checked',leads:[{id:'Jon',url:threadURL,last:'New reply',unanswered:true,state:'Negotiating',offer:0}]},evidence:[{url:threadURL,text:'New reply',listings:[{url:listingURL}]}]}}});
+vm.runInContext(source,c);
+(async()=>{
+ const job={kind:'sync',itemId:99,targetCandidateKeys:['jon|oak chair']},row={id:99,name:'Oak chair',url:listingURL,view:'Buying'};
+ observations=[{url:threadURL,nodes:[],text:'New reply',listings:[{url:listingURL}]}];
+ const result=await c.readConversations(job,row);
+ assert.equal(navigations[0],threadURL,'a verified saved thread is opened directly');
+ assert.equal(navigations.some(url=>url.includes('/marketplace/inbox')),false,'the changing inbox menu is skipped');
+ assert.equal(result.result.leads[0].last,'New reply');
+ assert.equal(agentCalls,1);
+ const noLinkEvidence=[{url:threadURL,text:'Jon · Oak chair\nNew reply',listings:[]}],verified={lead:{id:'Jon',url:threadURL,last:'New reply'}};
+ assert.equal(c.buyingThreadResultIssue(verified,noLinkEvidence,row,{person:'Jon'},threadURL),'','a saved thread plus exact visible seller and title remains verified without a banner link');
+ assert.match(c.buyingThreadResultIssue(verified,[{url:threadURL,text:'Sam · Other chair\nNew reply',listings:[]}],row,{person:'Jon'},threadURL),/listing banner/,'a mismatched visible identity remains blocked');
+ navigations=[];observations=[{url:'https://www.facebook.com/marketplace/inbox?targetTab=BUYER',epoch:1,nodes:[]}];
+ work.leads=[];
+ await assert.rejects(c.readConversations(job,row),/Temporary Facebook UI/);
+ console.log('PASS saved buying threads bypass changing Facebook menus and first-time UI gaps remain retryable');
+})().catch(error=>{console.error(error);process.exitCode=1});

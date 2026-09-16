@@ -1,0 +1,161 @@
+/* Shared desktop spacing and controls. Keep product photos and status readable. */
+#marketplace-flight-deck{overflow:visible}
+#marketplace-flight-deck .mp-nav{position:sticky;top:0;align-self:start;max-height:100vh;overflow-y:auto;z-index:4}
+#marketplace-flight-deck .va-task-row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:9px 0}
+#marketplace-flight-deck .va-task-row span{min-width:0;overflow-wrap:anywhere;color:#c5d3da}
+#marketplace-flight-deck .va-task-row .mp-small-button{flex:none}
+#marketplace-flight-deck .va-task-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px}
+#marketplace-flight-deck .mp-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 24px;align-items:start}
+#marketplace-flight-deck .mp-fields>label,#marketplace-flight-deck .inv-label{display:flex;flex-direction:column;gap:8px;min-width:0;font-size:13px;line-height:1.4}
+#marketplace-flight-deck #mp-settings input:not([type=checkbox]):not([type=radio]),#marketplace-flight-deck #mp-settings select,#marketplace-flight-deck #mp-settings textarea{box-sizing:border-box;width:100%;min-width:0;height:44px;margin:0;padding:10px 12px;border:1px solid #344c5b;border-radius:8px;background:#0c1923;color:#e2edf3;font:inherit;line-height:22px}
+#marketplace-flight-deck #mp-settings select{appearance:none;padding-right:32px;background-image:linear-gradient(45deg,transparent 50%,#a1bac8 50%),linear-gradient(135deg,#a1bac8 50%,transparent 50%);background-position:calc(100% - 18px) 19px,calc(100% - 13px) 19px;background-size:5px 5px;background-repeat:no-repeat}
+#marketplace-flight-deck .vx-toggle-setting{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 14px;align-items:center}
+#marketplace-flight-deck .vx-toggle-setting .mp-field-help{grid-column:1/-1}
+#marketplace-flight-deck .vx-setting-switch{position:relative;width:42px;height:24px}
+#marketplace-flight-deck .vx-setting-switch input{position:absolute;opacity:0;pointer-events:none}
+#marketplace-flight-deck .vx-setting-track{display:block;width:42px;height:24px;border-radius:999px;background:#344651;transition:background .18s}
+#marketplace-flight-deck .vx-setting-track:after{content:"";position:absolute;top:4px;left:4px;width:16px;height:16px;border-radius:50%;background:#b5c4cb;transition:transform .18s,background .18s}
+#marketplace-flight-deck .vx-setting-switch input:checked+.vx-setting-track{background:#22727a}
+#marketplace-flight-deck .vx-setting-switch input:checked+.vx-setting-track:after{transform:translateX(18px);background:#d8fffc}
+#marketplace-flight-deck .vx-setting-switch input:focus-visible+.vx-setting-track{outline:2px solid var(--mp-accent);outline-offset:3px}
+#marketplace-flight-deck #mp-settings textarea{height:auto;min-height:96px;resize:vertical}
+#marketplace-flight-deck #mp-settings input[type=checkbox]{width:16px;height:16px;flex:none}
+#marketplace-flight-deck #mp-settings label:has(input[type=checkbox]){flex-direction:row;align-items:center;gap:9px}
+#marketplace-flight-deck #mp-settings input[type=file]{height:auto;min-height:44px}
+#marketplace-flight-deck #mp-settings form>.mp-action{width:auto;min-width:160px;display:inline-flex;margin:24px 12px 0 0}
+#marketplace-flight-deck #mp-settings form>.mp-small-button{margin:24px 10px 0 0}
+#marketplace-flight-deck #mp-settings .mp-fields+.mp-fields{margin-top:20px}
+#marketplace-flight-deck .mp-settings-footer,.vx-actions{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:22px}
+#marketplace-flight-deck .mp-settings-footer .mp-action{width:auto;margin:0}
+#marketplace-flight-deck .vx-selling-form{max-width:960px;margin:0 auto}
+#marketplace-flight-deck .vx-selling-section{margin:0 0 16px;padding:22px 24px;border:1px solid #2d4654;border-radius:14px;background:#0c1923}
+#marketplace-flight-deck .vx-selling-section>header{display:grid;grid-template-columns:30px minmax(0,1fr);gap:12px;align-items:start;margin-bottom:20px}
+#marketplace-flight-deck .vx-selling-section>header>span{display:grid;place-items:center;width:26px;height:26px;border:1px solid #3d6674;border-radius:50%;color:#82e8e6;font-size:11px;font-weight:700}
+#marketplace-flight-deck .vx-selling-section h3{margin:1px 0 4px;color:#e5f0f4;font-size:16px;line-height:1.35}
+#marketplace-flight-deck .vx-selling-section header p{margin:0;color:#8fa8b6;font-size:12px;line-height:1.5}
+#marketplace-flight-deck .vx-selling-toggles{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+#marketplace-flight-deck .vx-selling-section label.vx-toggle-setting:has(input[type=checkbox]){display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:14px;min-height:62px;padding:11px 13px;border:1px solid #344c5b;border-radius:9px;background:#0a1620}
+#marketplace-flight-deck .vx-in-person-setting{margin-bottom:18px}
+#marketplace-flight-deck .vx-meeting-note{margin:16px 0 0;padding:11px 13px;border-left:2px solid #4ec9ce;background:#0a1720;color:#a9bdc8;font-size:12px;line-height:1.5}
+#marketplace-flight-deck .vx-map-preview{display:inline-flex;align-items:center;width:max-content;color:#7ce5e2;font-size:11px;text-decoration:none}
+#marketplace-flight-deck .vx-map-preview:hover{text-decoration:underline}
+#marketplace-flight-deck .vx-selling-section[data-enabled="false"] .vx-meeting-fields,#marketplace-flight-deck .vx-selling-section[data-enabled="false"] .vx-meeting-note{opacity:.52}
+@media(max-width:760px){#marketplace-flight-deck .vx-selling-form{max-width:none}#marketplace-flight-deck .vx-selling-section{padding:18px}#marketplace-flight-deck .vx-selling-toggles{grid-template-columns:1fr}}
+#marketplace-flight-deck .inv-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr));gap:18px}
+#marketplace-flight-deck .inv-card{display:grid;grid-template-columns:84px minmax(0,1fr);align-content:start;align-items:start;gap:16px;padding:20px;min-width:0;border-radius:14px}
+#marketplace-flight-deck .inv-card-photo{width:84px;height:104px;border-radius:9px;overflow:hidden}
+#marketplace-flight-deck .inv-card-photo img{width:100%;height:100%;object-fit:cover}
+#marketplace-flight-deck .inv-card>div:nth-child(2){min-width:0}
+#marketplace-flight-deck .inv-card label{font-size:14px;line-height:1.5;overflow-wrap:break-word}
+#marketplace-flight-deck .inv-card p{font-size:12px;line-height:1.5}
+#marketplace-flight-deck .inv-card .research-open{grid-column:2;justify-self:start;min-height:36px;align-self:start}
+#marketplace-flight-deck .inv-card .cost-unknown{grid-column:1 / -1;border-top:1px solid #2b3c49;padding-top:12px;font-size:11px;line-height:1.4;overflow-wrap:normal}
+#marketplace-flight-deck .inv-card .mp-small-button{width:auto;height:auto;min-height:36px;align-self:start;justify-self:start}
+#marketplace-flight-deck .mp-open-listing{margin-top:13px}
+#marketplace-flight-deck .inv-bulk{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:14px 0 22px}
+#marketplace-flight-deck .inv-bulk select{height:36px;min-width:160px;border:1px solid #344c5b;border-radius:7px;background:#0c1923;color:#e2edf3;padding:6px 10px}
+#marketplace-flight-deck .inv-table th,#marketplace-flight-deck .inv-table td{padding:12px;vertical-align:middle}
+#marketplace-flight-deck .inv-table input[type=number]{width:82px;min-height:36px}
+#marketplace-flight-deck .vx-connections{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:20px}
+#marketplace-flight-deck .vx-connection{padding:24px;border:1px solid #304856;border-radius:16px;background:#0d1b25;display:flex;flex-direction:column;align-items:flex-start;gap:12px}
+#marketplace-flight-deck .vx-connection img{width:72px;height:72px;object-fit:contain;margin-bottom:8px}
+#marketplace-flight-deck .vx-connection h3{font-size:18px;margin:0}
+#marketplace-flight-deck .vx-connection p{font-size:12px;color:#9fb4c3;min-height:34px;line-height:1.5;margin:0}
+#marketplace-flight-deck .vx-health{font-size:12px;color:#a6b9c4;display:flex;align-items:center;gap:7px}
+#marketplace-flight-deck .vx-health:before{content:'';width:7px;height:7px;border-radius:50%;background:#70818c}
+#marketplace-flight-deck .vx-health[data-connected=true]{color:#80e5be}
+#marketplace-flight-deck .vx-health[data-connected=true]:before{background:#65dfa8;box-shadow:0 0 10px #65dfa844}
+#marketplace-flight-deck .vx-support{margin:20px 0}
+@media(max-width:760px){#marketplace-flight-deck .mp-fields{grid-template-columns:1fr}#marketplace-flight-deck .vx-connections{grid-template-columns:1fr}#marketplace-flight-deck .inv-cards{grid-template-columns:1fr}}
+/* A persistent, dismissible task alert that never steals keyboard focus. */
+#va-blocker{display:flex;align-items:center;justify-content:space-between;gap:20px;border:1px solid #806235;border-radius:12px;background:#28241c;padding:18px 20px;margin:0 0 20px;color:#f3d49c}
+#va-blocker p{color:#ddd4c5;margin:7px 0;line-height:1.45;max-width:65ch}
+#va-blocker small{color:#c3b49e}.va-blocker-actions{display:flex;gap:8px;flex-shrink:0}
+@media(max-width:700px){#va-blocker{align-items:flex-start;flex-direction:column}.va-blocker-actions{flex-wrap:wrap}}
+#marketplace-flight-deck .mp-core[data-issues="1"],#marketplace-flight-deck .mp-core[data-issues="2"]{height:264px}
+#marketplace-flight-deck .mp-core[data-issues="1"] #mp-core-title,#marketplace-flight-deck .mp-core[data-issues="2"] #mp-core-title{bottom:116px}
+#marketplace-flight-deck .mp-core-lane{height:auto;min-height:50px;align-content:center}
+#marketplace-flight-deck .mp-lane-alert{grid-column:1/-1;display:grid;gap:3px;width:100%;border:0;border-top:1px solid #36515d;background:transparent;color:#ffd19a;padding:7px 0 1px;text-align:left;font:inherit;cursor:pointer}
+#marketplace-flight-deck .mp-lane-alert strong{font-size:10px;color:#ffd19a}
+#marketplace-flight-deck .mp-lane-alert small{white-space:normal;overflow:visible;font-size:9px;line-height:1.35;color:#a9bdc7}
+#marketplace-flight-deck .mp-lane-alert span{color:#8ff4ed;white-space:nowrap}
+#marketplace-flight-deck .mp-lane-alert:focus-visible{outline:2px solid var(--mp-accent);outline-offset:3px}
+#marketplace-flight-deck #vx-automation-guidance{position:sticky;top:12px;z-index:12;border:1px solid #8b6d45;border-radius:8px;background:#211d19;padding:13px 14px;margin-bottom:18px;color:#ffd19a;box-shadow:0 10px 24px rgba(0,0,0,.3)}
+#marketplace-flight-deck #vx-automation-guidance p{margin:5px 0 0;color:#d5c1a8}
+#marketplace-flight-deck .vx-guidance-target{outline:2px solid #ffbd70;outline-offset:5px;box-shadow:0 0 0 6px rgba(255,189,112,.08)}
+#marketplace-flight-deck .vx-field-guidance{display:block;margin-top:8px;color:#ffd19a;font-size:11px;line-height:1.4}
+#marketplace-flight-deck #vx-source-save-state{margin-left:auto;color:#87a1af;font-size:11px}
+#marketplace-flight-deck #vx-source-save-state[data-dirty="true"]{color:#ffd19a}
+#marketplace-flight-deck #vx-source-save-state[data-saved="true"]{color:#80e5be}
+@media(max-width:470px){#marketplace-flight-deck .mp-core[data-issues="1"]{height:350px}#marketplace-flight-deck .mp-core[data-issues="2"]{height:410px}#marketplace-flight-deck .mp-core[data-issues="1"] #mp-core-title{bottom:206px}#marketplace-flight-deck .mp-core[data-issues="2"] #mp-core-title{bottom:266px}}
+
+/* Buying settings present one decision at a time and keep live activity separate. */
+#marketplace-flight-deck .vx-source-form{max-width:1120px;margin:0 auto}
+#marketplace-flight-deck .vx-source-intro{max-width:680px;margin:0 0 24px;color:#a9bdc8;font-size:14px;line-height:1.55}
+#marketplace-flight-deck .vx-source-section{margin:0 0 16px;padding:22px 24px;border:1px solid #2d4654;border-radius:14px;background:#0c1923}
+#marketplace-flight-deck .vx-source-section>header{display:grid;grid-template-columns:30px minmax(0,1fr);gap:12px;align-items:start;margin-bottom:20px}
+#marketplace-flight-deck .vx-source-section>header>span{display:grid;place-items:center;width:26px;height:26px;border:1px solid #3d6674;border-radius:50%;color:#82e8e6;font-size:11px;font-weight:700}
+#marketplace-flight-deck .vx-source-section h3{margin:1px 0 4px;color:#e5f0f4;font-size:16px;line-height:1.35}
+#marketplace-flight-deck .vx-source-section header p{margin:0;color:#8fa8b6;font-size:12px;line-height:1.5}
+#marketplace-flight-deck .vx-source-section .mp-fields{gap:16px 20px}
+#marketplace-flight-deck .vx-source-section .mp-field-help{margin-top:-2px}
+#marketplace-flight-deck .vx-source-form .mp-source-targets{min-height:84px}
+#marketplace-flight-deck .vx-source-section label.vx-toggle-setting:has(input[type=checkbox]){display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:14px;min-height:44px;padding:10px 12px;border:1px solid #344c5b;border-radius:8px;background:#0a1620}
+#marketplace-flight-deck .vx-toggle-setting strong,#marketplace-flight-deck .vx-toggle-setting small{display:block}
+#marketplace-flight-deck .vx-toggle-setting strong{color:#dce8ed;font-size:13px;font-weight:600}
+#marketplace-flight-deck .vx-toggle-setting small{margin-top:2px;color:#89a2b2;font-size:11px;font-weight:400}
+#marketplace-flight-deck .vx-capital-note{display:grid;gap:4px;margin-top:18px;padding:13px 15px;border:1px solid #315565;border-radius:9px;background:#0a1720;color:#d8e8ed}
+#marketplace-flight-deck .vx-capital-note strong{font-size:13px}
+#marketplace-flight-deck .vx-capital-note span{color:#92aab7;font-size:11px;line-height:1.45}
+#marketplace-flight-deck .vx-capital-note[data-warning="true"]{border-color:#6a5838;background:#1c1a16}
+#marketplace-flight-deck .vx-capital-note[data-warning="true"] strong{color:#f0cc91}
+#marketplace-flight-deck .vx-mode-note{margin:14px 0 0;padding:11px 13px;border-left:2px solid #4ec9ce;background:#0a1720;color:#a9bdc8;font-size:12px;line-height:1.5}
+#marketplace-flight-deck .vx-source-form .mp-source-advanced{margin:18px 0 0;padding:0;border:1px solid #2d4654;border-radius:12px;background:#0b1720;overflow:hidden}
+#marketplace-flight-deck .vx-source-form .mp-source-advanced>summary{padding:16px 18px;color:#dbe8ed;font-size:13px;font-weight:650;cursor:pointer;list-style-position:inside}
+#marketplace-flight-deck .vx-source-form .mp-source-advanced>summary:hover{background:#10212c}
+#marketplace-flight-deck .vx-source-form .mp-source-advanced>p{margin:0;padding:0 18px 14px}
+#marketplace-flight-deck .vx-source-form .mp-source-advanced>.mp-fields{margin:0;padding:18px;border-top:1px solid #283e4b}
+#marketplace-flight-deck .vx-source-activity{margin-top:16px;padding:18px;border:1px solid #2d4654;border-radius:12px;background:#0b1720}
+#marketplace-flight-deck .vx-source-activity>header{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;margin-bottom:16px}
+#marketplace-flight-deck .vx-source-activity>header span{display:block;margin-bottom:3px;color:#7893a2;font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase}
+#marketplace-flight-deck .vx-source-activity>header strong{color:#e1edf1;font-size:14px}
+#marketplace-flight-deck .vx-source-activity>header small{color:#9cb2bd;font-size:11px}
+#marketplace-flight-deck .vx-source-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid #293f4b;border-radius:9px;overflow:hidden}
+#marketplace-flight-deck .vx-source-metrics span{display:flex;align-items:baseline;gap:7px;padding:12px 14px;border-right:1px solid #293f4b;color:#8fa7b4;font-size:11px}
+#marketplace-flight-deck .vx-source-metrics span:last-child{border-right:0}
+#marketplace-flight-deck .vx-source-metrics strong{color:#dce9ed;font-size:17px;font-weight:650}
+#marketplace-flight-deck .vx-source-activity>p{margin:12px 0 0;color:#8fa7b4;font-size:11px;line-height:1.5}
+#marketplace-flight-deck .vx-source-form .mp-settings-footer{position:sticky;bottom:0;z-index:8;justify-content:space-between;margin:20px -4px 0;padding:14px 4px;background:linear-gradient(180deg,rgba(8,15,23,0),#080f17 22%)}
+#marketplace-flight-deck .vx-source-form .mp-settings-footer>div{display:flex;gap:10px;align-items:center}
+#marketplace-flight-deck .vx-source-form .mp-settings-footer .mp-action,#marketplace-flight-deck .vx-source-form .mp-settings-footer .mp-small-button{margin:0}
+#marketplace-flight-deck .vx-source-form #vx-source-save-state{display:flex;align-items:center;min-height:38px}
+@media(max-width:760px){#marketplace-flight-deck .vx-source-form{max-width:none}#marketplace-flight-deck .vx-source-section{padding:18px}#marketplace-flight-deck .vx-source-metrics{grid-template-columns:1fr 1fr}#marketplace-flight-deck .vx-source-metrics span:nth-child(2){border-right:0}#marketplace-flight-deck .vx-source-metrics span:nth-child(-n+2){border-bottom:1px solid #293f4b}}
+@media(max-width:520px){#marketplace-flight-deck .vx-source-activity>header{display:grid;gap:6px}#marketplace-flight-deck .vx-source-form .mp-settings-footer{align-items:stretch;flex-direction:column}#marketplace-flight-deck .vx-source-form .mp-settings-footer>div{display:grid;grid-template-columns:1fr 1fr}#marketplace-flight-deck .vx-source-form .mp-settings-footer .mp-action,#marketplace-flight-deck .vx-source-form .mp-settings-footer .mp-small-button{width:100%;min-width:0}}
+
+/* Stable vertical flow for the activity visual and automation controls. */
+#marketplace-flight-deck .mp-core{height:auto;min-height:218px;display:grid;grid-template-rows:142px minmax(16px,auto) auto;gap:10px}
+#marketplace-flight-deck .mp-core[data-issues="1"],#marketplace-flight-deck .mp-core[data-issues="2"]{height:auto;min-height:218px}
+#marketplace-flight-deck .mp-core-art{grid-row:1;position:relative;margin:0 auto}
+#marketplace-flight-deck #mp-core-title,#marketplace-flight-deck .mp-core[data-issues="1"] #mp-core-title,#marketplace-flight-deck .mp-core[data-issues="2"] #mp-core-title{position:static;align-self:center;min-height:16px;line-height:16px}
+#marketplace-flight-deck .mp-core-lanes{position:static;align-self:start}
+
+/* Alerts and actions keep a consistent inset from every panel edge. */
+#marketplace-flight-deck #va-blocker{margin:0 var(--mp-space) 20px;padding:20px 22px;align-items:center;gap:24px}
+#marketplace-flight-deck #va-blocker>div:first-child{min-width:0}
+#marketplace-flight-deck #va-blocker>div:first-child>strong{display:block;font-size:15px;line-height:1.35}
+#marketplace-flight-deck #va-blocker p{margin:8px 0;line-height:1.5}
+#marketplace-flight-deck .va-blocker-actions{display:flex;align-items:center;gap:10px;flex:0 0 auto}
+#marketplace-flight-deck .va-blocker-actions .mp-action,#marketplace-flight-deck .va-blocker-actions .mp-small-button{width:auto;min-width:88px;min-height:38px;margin:0;padding:8px 14px;justify-content:center}
+
+#marketplace-flight-deck .mp-detail-actions{display:flex;align-items:center;flex-wrap:wrap;gap:10px;padding:16px;border-top:1px solid var(--mp-line)}
+#marketplace-flight-deck .mp-detail-actions .mp-small-button{flex:1 1 118px;justify-content:center;margin:0;min-width:0}
+
+#marketplace-flight-deck .va-card-issue{margin:0 0 16px;padding:14px 16px;border:1px solid #765a2f;border-radius:9px;background:#211d17;color:#f3cd91}
+#marketplace-flight-deck .va-card-issue strong{display:block;font-size:13px;line-height:1.4}
+#marketplace-flight-deck .va-card-issue p{margin:6px 0 3px;color:#d4c8b6;font-size:12px;line-height:1.5}
+#marketplace-flight-deck .va-card-issue small{display:block;color:#aebcc2;font-size:11px;line-height:1.45}
+#marketplace-flight-deck .va-card-issue-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+#marketplace-flight-deck .va-card-issue-actions .mp-action,#marketplace-flight-deck .va-card-issue-actions .mp-small-button{width:auto;min-height:36px;margin:0;padding:7px 11px}
+
+@container(max-width:760px){#marketplace-flight-deck .mp-core{min-height:218px}}
+@container(max-width:470px){#marketplace-flight-deck .mp-core,#marketplace-flight-deck .mp-core[data-issues="1"],#marketplace-flight-deck .mp-core[data-issues="2"]{min-height:278px}#marketplace-flight-deck .va-blocker-actions{width:100%}#marketplace-flight-deck .va-blocker-actions button{flex:1}}
