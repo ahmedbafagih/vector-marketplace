@@ -23,7 +23,7 @@ const queued = [];
 let inboxRows = [{label: 'Alice old', person: 'Alice', listing: 'Oak Chair', preview: 'old'}];
 let aiCalls = 0;
 const c = vm.createContext({
-  Date, Map, Set, String, JSON, Error, Array, Object,
+  Date, Map, Set, String, JSON, Error, Array, Object, URL,
   rows: [listing],
   nativeState: {jobs},
   monitoringWanted: () => true,
@@ -40,6 +40,7 @@ const c = vm.createContext({
     throw Error('AI must not run during inbox polling');
   }
 });
+vm.runInContext(fs.readFileSync(__dirname + '/../Web/native.js', 'utf8').split('\n').find(l=>l.startsWith('function validThreadURL(')), c);
 vm.runInContext(fs.readFileSync(__dirname + '/../Web/conversations.js', 'utf8'), c);
 
 (async () => {
@@ -101,6 +102,24 @@ vm.runInContext(fs.readFileSync(__dirname + '/../Web/conversations.js', 'utf8'),
   assert.equal(c.nativeState.metrics.inboxPolls, 7);
   assert.equal(c.nativeState.metrics.inboxChanges, 5);
   assert.equal(c.nativeState.metrics.pollsWithChanges, 4);
+  inboxRows[1]={...inboxRows[1],preview:'Another question'};await c.pollInbox({kind:'poll'});
+  assert.equal(work.pendingInboxChanges.length,2,'a second buyer does not replace the first pending message');
+  inboxRows[0]={...inboxRows[0],preview:'You: Thanks for asking'};await c.pollInbox({kind:'poll'});
+  assert.equal(work.pendingInboxChanges.length,1,'an observed owner reply clears its pending preview');
+  assert.equal(work.pendingInboxChanges[0].person,'Bob');
+  work.enabled=true;queued.length=0;
+  const thread='https://www.facebook.com/messages/t/123';
+  inboxRows=[{label:'Alice new',person:'Alice',listing:'Oak Chair',url:thread,preview:'Already found a chair'}];
+  work.conversationProgress={candidates:[{key:thread,url:thread,person:'Alice'}],reads:{[thread]:{lead:{url:thread,last:'Old question'}}},censusComplete:true};
+  work.inboxFingerprints={'alice|oak chair':'old question',[thread]:'already found a chair'};
+  await c.pollInbox({kind:'poll'});
+  assert.equal(queued.length,1,'a URL baseline must not hide a changed legacy preview after census migrated the candidate');
+  assert.equal(work.inboxFingerprints['alice|oak chair'],undefined);
+  assert.equal(work.conversationProgress.reads[thread],undefined);
+  await c.pollInbox({kind:'poll'});assert.equal(queued.length,1,'the recovered preview is processed once');
+  work.inboxFingerprints={};work.conversationProgress.reads[thread]={lead:{url:thread,last:'Old question'}};
+  await c.pollInbox({kind:'poll'});assert.equal(queued.length,2,'a known thread without a comparable preview gets a fresh read');
+  assert.equal(aiCalls,0);
   console.log('PASS unchanged inbox uses zero AI, enabled listings queue reads, and AI-off listings hold changes locally');
 })().catch(e => {
   console.error(e);

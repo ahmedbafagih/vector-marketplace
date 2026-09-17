@@ -1,0 +1,30 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const source=fs.readFileSync(__dirname+'/../Web/conversations.js','utf8');
+let position=0,loading=false,actions=0,saves=0,reloadDelay=false;const waited=new Map();
+const reloading=()=>reloadDelay&&position>0&&position<48&&position%5===0&&(waited.get(position)||0)<6;
+const item={id:1,name:'Oak chair',view:'Selling'},inbox='https://www.facebook.com/marketplace/inbox?targetTab=SELLER';
+const c=vm.createContext({Date,Map,Set,String,JSON,Error,Array,Object,Number,nativeState:{metrics:{}},saveSoon(){saves++;},delay:async()=>{},validThreadURL:u=>u.includes('/messages/t/'),nativeCall:async(method,args)=>{
+ if(method==='observe')return{url:inbox,text:'Selling',epoch:1,inboxLoading:loading||reloading()?['Loading...']:[],inboxRows:[{url:'https://www.facebook.com/messages/t/'+(position+1),listing:'Oak chair',person:'Buyer '+position,label:'Buyer '+position}],nodes:[{id:1,kind:'inbox-conversation'}]};
+ if(args.action==='navigate'){position=0;return{}};
+ const before=position;if(reloading())waited.set(position,(waited.get(position)||0)+1);else if(!loading&&position<80)position++;actions++;return{before,after:position,scrolled:before!==position,atEnd:position===80};
+}});
+vm.runInContext(source,c);
+(async()=>{
+ const p={candidates:[],reads:{}};
+ await c.discoverInboxCandidates({},item,p,inbox);
+ assert.equal(p.censusComplete,false);assert.equal(p.historyFrontier,48);assert.equal(actions,48);assert.equal(saves,2,'rapid local scrolling batches progress writes and saves the final checkpoint');
+ assert.equal(p.historyAdvanced,true,'advancing a partial scan permits a continuation');
+ actions=0;await c.discoverInboxCandidates({},item,p,inbox);
+ assert.equal(p.censusComplete,true,'known pages do not consume the next new-history allowance');
+ assert.equal(p.candidates.length,81,'every page from the top through the verified end remains represented');
+ assert.equal(p.historyFrontier,undefined);assert.equal(p.historyAdvanced,undefined);
+ reloadDelay=true;actions=0;const delayed={candidates:[],reads:{},historyFrontier:48};
+ await c.discoverInboxCandidates({},item,delayed,inbox);
+ assert.equal(delayed.censusComplete,true,'reloading previously scanned pages must not exhaust the new-history allowance');
+ assert.equal(delayed.candidates.length,81);assert(actions<192,'the total-work bound remains in force');
+ reloadDelay=false;loading=true;actions=0;const stalled={candidates:[],reads:{},historyFrontier:48};
+ await c.discoverInboxCandidates({},item,stalled,inbox);
+ assert.equal(stalled.censusComplete,false);assert.equal(stalled.historyAdvanced,undefined);
+ assert.equal(actions,16,'a stalled loader yields without an infinite retry loop');
+ console.log('PASS history checkpoints traverse known pages and bound stalled loading');
+})().catch(e=>{console.error(e);process.exitCode=1});

@@ -15,6 +15,10 @@ assert.equal(c.recoverableConversationFailure({kind:'reply'},'Reply exceeds the 
 const retry={kind:'sync',itemId:7,state:'running'};c.holdForAutomaticRetry(retry,'Temporary Facebook UI: controls unavailable.');
 assert.equal(retry.state,'queued');assert(retry.retryAt>Date.now());assert.equal(work.needs,false);assert.match(retry.note,/Retrying automatically/);
 assert.equal(c.recoverableConversationFailure({kind:'sync'},'Step limit reached.'),true);const exhausted={kind:'sync',itemId:7,state:'running'};for(let i=0;i<7;i++)c.holdForAutomaticRetry(exhausted,'Step limit reached.');assert.equal(exhausted.state,'needs_you');assert.match(exhausted.note,/after 6 retries/);
+assert.equal(c.recoverableConversationFailure({kind:'scan'},'Codex request failed. Retry from Activity.'),true);
+assert.equal(c.recoverableConversationFailure({kind:'scan'},'Codex sign-in needs attention.'),false);
+assert.equal(c.recoverableConversationFailure({kind:'offer'},'Codex request failed. Retry from Activity.'),false);
+const aiRetry={kind:'scan',state:'running'};c.holdForAutomaticRetry(aiRetry,'Codex request failed. Retry from Activity.');assert.equal(aiRetry.state,'queued');assert.match(aiRetry.note,/AI request did not finish/);for(let i=0;i<6;i++)c.holdForAutomaticRetry(aiRetry,'Codex request failed. Retry from Activity.');assert.equal(aiRetry.state,'needs_you');assert.match(aiRetry.note,/AI request failed after 6/);
 c.recoverStoredConversationFailures();
 assert.equal(c.nativeState.jobs[0].state,'cancelled');assert.equal(c.nativeState.jobs[1].state,'queued');assert.match(c.nativeState.jobs[1].note,/saved conversation link/);assert.equal(c.nativeState.jobs[3].state,'queued');assert.match(c.nativeState.jobs[3].note,/saved buyer conversation/);assert.equal(c.nativeState.conversationRecoveryVersion,4);
 c.recoverStoredOfferFailures();assert.equal(c.nativeState.jobs[2].state,'queued');assert.match(c.nativeState.jobs[2].note,/exact seller listing/);assert.equal(c.nativeState.offerRecoveryVersion,1);

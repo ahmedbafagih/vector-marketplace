@@ -17,4 +17,7 @@ test('paused selling blocks publication',()=>{scope.laneEnabled.Selling=false;as
 test('paused buying blocks scan',()=>{scope.laneEnabled.Buying=false;assert(!scope.jobAllowed({kind:'scan'}));scope.laneEnabled.Buying=true});
 test('paused listing blocks reply',()=>{scope.rows.push({id:1,view:'Selling',work:{enabled:false}});assert(!scope.jobAllowed({kind:'reply',itemId:1}))});
 test('inventory revisions change with price',()=>{scope.rows[0].ask=80;const before=scope.itemRevision({itemId:1});scope.rows[0].ask=90;assert.notEqual(before,scope.itemRevision({itemId:1}))});
+
+test("selling ignores a buying-only outcome flag while enforcing its price floor",()=>{const answer={message:"Sorry, I cannot accept that offer.",price:0,passOnDeal:true};scope.validateReply(answer,{buying:false,floor:80,ask:100,priceEnabled:true});assert.equal(answer.passOnDeal,false);assert.throws(()=>scope.validateReply({message:"I can do $50",price:50,passOnDeal:true},{buying:false,floor:80,ask:100,priceEnabled:true}),/price limit/)});
+
 console.log(checks+' desktop logic checks passed');

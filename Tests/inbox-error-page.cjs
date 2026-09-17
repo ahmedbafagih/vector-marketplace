@@ -1,0 +1,6 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+let text='Sorry, something went wrong.',loading=[],calls=0;
+const state={jobs:[],inboxMatchedBuying:6,inboxFingerprintVersionBuying:2};
+const c=vm.createContext({Date,Map,Set,String,JSON,Error,Array,Object,rows:[{id:1,view:'Buying',name:'Phone'}],nativeState:state,monitoringWanted:()=>true,delay:async()=>{},nativeCall:async method=>{calls++;if(method==='observeInbox')return{url:'https://www.facebook.com/marketplace/inbox?targetTab=BUYER',inboxRows:[],loading};if(method==='observe')return{text};return{};}});
+vm.runInContext(fs.readFileSync(__dirname+'/../Web/conversations.js','utf8'),c);
+(async()=>{const job={kind:'poll',side:'Buying'};await assert.rejects(c.observeReadyInbox(),/Facebook could not load.*No conversations were checked/);assert.equal(state.inboxMatchedBuying,6);assert.equal(job.completionNote,undefined);text='Inbox';loading=['Loading'];await assert.rejects(c.observeReadyInbox(),/still loading/);text='No conversations';loading=[];assert.equal((await c.observeReadyInbox()).inboxRows.length,0);console.log('PASS failed or loading inbox pages never become successful zero-message checks');})().catch(e=>{console.error(e);process.exitCode=1});

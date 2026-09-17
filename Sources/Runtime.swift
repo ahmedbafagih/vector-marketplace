@@ -25,7 +25,7 @@ final class Runtime {
             return "\(provider) sign-in needs attention. Sign into its official CLI, then reconnect in Connections."
         }
         // CLI stderr can echo the full task, including private buyer messages.
-        return "\(provider) request failed. Check its CLI login and availability, then retry from Activity."
+        return "\(provider) request failed. Retry from Activity."
     }
     func run(executable:String, arguments:[String], input:String, cwd:URL, timeout:Double=180) throws -> (Int32,String,String) {
         let p=Process();p.executableURL=URL(fileURLWithPath:executable);p.arguments=arguments;p.currentDirectoryURL=cwd
@@ -60,7 +60,7 @@ final class Runtime {
         if provider=="Claude Code" {
             args=["-p","--safe-mode","--tools","","--strict-mcp-config","--mcp-config","{\"mcpServers\":{}}","--no-session-persistence","--output-format","json","--json-schema",String(data:schemaData,encoding:.utf8)!]
         } else {
-            args=["exec","--ignore-user-config","--skip-git-repo-check","--ephemeral","--sandbox","read-only","--disable","shell_tool","--disable","apps","--disable","multi_agent","-c","web_search=\"disabled\"","--color","never","--output-schema",schemaURL.path,"-o",resultURL.path,"-"]
+            args=["exec","--ignore-user-config","--model","gpt-5.6-luna","-c","model_reasoning_effort=\"medium\"","--skip-git-repo-check","--ephemeral","--sandbox","read-only","--disable","shell_tool","--disable","apps","--disable","multi_agent","-c","web_search=\"disabled\"","--color","never","--output-schema",schemaURL.path,"-o",resultURL.path,"-"]
         }
         let (code,out,err)=try run(executable:exe,arguments:args,input:prompt,cwd:dir)
         guard code==0 else {throw VectorError(message:Self.failureMessage(provider:provider,diagnostic:err.isEmpty ? out:err))}

@@ -15,6 +15,7 @@ rules = {
     'GitHub token': re.compile(r'gh[pousr]_[A-Za-z0-9]{30,}'),
     'provider secret': re.compile(r'sk-' + r'(?:proj-|ant-)?[A-Za-z0-9_-]{32,}'),
     'AWS access key': re.compile(r'AKIA[A-Z0-9]{16}'),
+    'known private pickup address': re.compile(r'145\s+Mutual\s+Street', re.IGNORECASE),
 }
 failures = []
 checked = 0

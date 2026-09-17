@@ -29,7 +29,7 @@ async function settled(id){
  const until=Date.now()+20000;
  while(Date.now()<until){
   const t=await chrome.tabs.get(id);
-  if(!allowed(t.url))throw Error('Finish Facebook verification in Chrome, then return to Marketplace.');
+  if(!allowed(t.url)){if(allowed(t.pendingUrl)){await new Promise(r=>setTimeout(r,200));continue}throw Error('Finish Facebook verification in Chrome, then return to Marketplace.');}
   if(!t.pendingUrl){
    const result=await chrome.scripting.executeScript({target:{tabId:id},injectImmediately:true,func:()=>({url:location.href,usable:!!document.body&&document.readyState!=='loading'})});
    if(result[0]?.result?.usable&&result[0].result.url===t.url)return;
@@ -48,10 +48,11 @@ async function ensureWorkspace(id,focus=false){
  if(win.state==='minimized')await chrome.windows.update(win.id,{state:'normal',focused:focus});
  else if(focus)await chrome.windows.update(win.id,{focused:true});
 }
+const sameAddress=(a,b)=>{try{const x=new URL(a),y=new URL(b);return x.origin===y.origin&&x.pathname.replace(/\/$/,'')===y.pathname.replace(/\/$/,'')&&x.search===y.search}catch{return false}};
 async function openMarketplace(url,focus=false){const session=port;if(!allowed(url))throw Error('This URL is outside Marketplace.');if(tabId!==null){try{await chrome.tabs.get(tabId)}catch{tabId=null}}
  if(tabId===null){const candidates=await chrome.tabs.query({url:['https://www.facebook.com/marketplace/*','https://facebook.com/marketplace/*']});tabId=candidates[0]?.id??null}
  if(port!==session)throw Error('Vector disconnected before navigation.');
- if(tabId===null){const win=await chrome.windows.create({url,type:'normal',focused:focus,width:1200,height:900});tabId=win.tabs[0].id}else{await ensureWorkspace(tabId,focus);if(port!==session)throw Error('Vector disconnected before navigation.');const current=await chrome.tabs.get(tabId);if(current.url!==url&&current.pendingUrl!==url)await chrome.tabs.update(tabId,{url})}
+ if(tabId===null){const win=await chrome.windows.create({url,type:'normal',focused:focus,width:1200,height:900});tabId=win.tabs[0].id}else{await ensureWorkspace(tabId,focus);if(port!==session)throw Error('Vector disconnected before navigation.');const current=await chrome.tabs.get(tabId),thread=/^https:\/\/(?:www\.)?facebook\.com\/messages\/t\//.test(url);if(thread&&!sameAddress(current.url,url)&&!sameAddress(current.pendingUrl,url)){const fresh=await chrome.tabs.create({windowId:current.windowId,url,active:true});try{await settled(fresh.id);const opened=await chrome.tabs.get(fresh.id);if(!sameAddress(opened.url,url))throw Error('Facebook did not keep the selected Messenger conversation open.');await chrome.tabs.remove(current.id);tabId=fresh.id}catch(e){await chrome.tabs.remove(fresh.id).catch(()=>{});throw e}}else if(!sameAddress(current.url,url)&&!sameAddress(current.pendingUrl,url))await chrome.tabs.update(tabId,{url})}
  chrome.storage.local.set({marketplaceTabId:tabId});observation=null;await settled(tabId);return {opened:true};
 }
 async function adoptOpenedThread(previousTabId,knownTabIds){
@@ -65,7 +66,7 @@ async function adoptOpenedThread(previousTabId,knownTabIds){
 }
 async function dispatch(m){
  if(!ready)throw Error('Vector disconnected.');const a=m.args||{};
- if(m.method==='status'){let tabConnected=false;try{await target();tabConnected=true}catch{}return {connected:true,tabConnected,version:chrome.runtime.getManifest().version,protocol:1,readiness:'document-v5'}}
+ if(m.method==='status'){let tabConnected=false;try{await target();tabConnected=true}catch{}return {connected:true,tabConnected,version:chrome.runtime.getManifest().version,protocol:1,readiness:'document-v6'}}
  if(m.method==='open')return openMarketplace(a.url,true);
  if(m.method==='photo'){if(!/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(a.data)||a.data.length>810000)throw Error('Invalid photo.');photo=a.data;return {ready:true}}
  if(m.method==='observe'||m.method==='observeInbox'){
@@ -79,7 +80,7 @@ async function dispatch(m){
   const data=result[0]?.result,current=await chrome.tabs.get(t.id);
   if(!ready||port!==session)throw Error('Vector disconnected during observation.');
   if(data?.vectorObservationError)throw Error(data.vectorObservationError);
-  if(data&&typeof data.url==='string'&&typeof data.text==='string'&&Array.isArray(data.nodes)&&Array.isArray(data.listings)&&data.url===current.url&&!current.pendingUrl){epoch++;data.epoch=epoch;observation={url:data.url,nodes:data.nodes,epoch};return m.method==='observeInbox'?{url:data.url,inboxRows:Array.isArray(data.inboxRows)?data.inboxRows:[],loading:Array.isArray(data.loading)?data.loading:[],visibility:data.visibility||'unknown'}:data;}
+  if(data&&typeof data.url==='string'&&typeof data.text==='string'&&Array.isArray(data.nodes)&&Array.isArray(data.listings)&&data.url===current.url&&!current.pendingUrl){epoch++;data.epoch=epoch;observation={url:data.url,nodes:data.nodes,epoch};return m.method==='observeInbox'?{url:data.url,inboxRows:Array.isArray(data.inboxRows)?data.inboxRows:[],loading:Array.isArray(data.inboxLoading)?data.inboxLoading:(Array.isArray(data.loading)?data.loading:[]),inboxLoading:data.inboxLoading,visibility:data.visibility||'unknown'}:data;}
  }
  throw Error('Marketplace changed while being read. Observe again; no action was taken.');
  }
@@ -91,7 +92,7 @@ async function dispatch(m){
  if(node&&!(a.action==='click'&&node.kind==='inbox-conversation'&&new URL(observation.url).pathname.startsWith('/marketplace/inbox'))){if(a.action==='click'&&node.href&&!allowed(node.href))throw Error('This link is outside Marketplace.');if(/delete|remove permanently|checkout|pay now|buy now|password|log in|sign in|security code|verification|two.factor/i.test(node.label))throw Error('Complete this step yourself in Chrome.');if(a.action==='click'&&/\b(publish|post|send|confirm|place order)\b/i.test(node.label)&&!a.allowCommit)throw Error('Read-only action blocked: '+node.label+' ('+(node.role||node.tag||'control')+'). No action was taken.');}
  const upload=a.action==='click'&&photo&&/photo|image|picture/i.test(node?.label||'')?photo:null;
  const opensThread=a.action==='click'&&/^open in messenger$/i.test(node?.label||''),knownTabIds=opensThread?new Set((await chrome.tabs.query({})).map(x=>x.id)):null,previousTabId=t.id;
- const result=await run((args,label,expectedURL,upload)=>{
+ const result=await run(async(args,label,expectedURL,upload)=>{
   if(location.href!==expectedURL)throw Error('Page changed.');if(args.action==='scroll'){
    let scroller=globalThis.vectorElements?.[args.id];if(label&&(!scroller||!scroller.isConnected))throw Error('Scroll target disappeared. Observe again.');
    while(scroller&&!(scroller.scrollHeight>scroller.clientHeight+1&&/(auto|scroll)/.test(getComputedStyle(scroller).overflowY)))scroller=scroller.parentElement;
@@ -106,7 +107,7 @@ async function dispatch(m){
   if(el.type==='file')throw Error('Attach a product photo in Vector first.');
   if(args.action==='click'){el.click();return {acted:true}}
   if(args.action==='select'){if(el.tagName!=='SELECT')throw Error('Open the dropdown first.');el.value=args.value;el.dispatchEvent(new Event('change',{bubbles:true}));return {acted:true}}
-  el.focus();if(el.isContentEditable){const selection=getSelection(),range=document.createRange();range.selectNodeContents(el);selection.removeAllRanges();selection.addRange(range);let inserted=false;try{inserted=document.execCommand('insertText',false,args.value)}catch{}if(!inserted){range.deleteContents();range.insertNode(document.createTextNode(args.value));range.collapse(false);selection.removeAllRanges();selection.addRange(range);el.dispatchEvent(new InputEvent('beforeinput',{bubbles:true,inputType:'insertText',data:args.value}));el.dispatchEvent(new InputEvent('input',{bubbles:true,inputType:'insertText',data:args.value}))}const actual=(el.innerText||el.textContent||'').replace(/\u00a0/g,' ').trim();if(!actual.includes(String(args.value).trim()))throw Error('Message composer did not accept the approved text. No message was sent.')}else{const proto=el.tagName==='TEXTAREA'?HTMLTextAreaElement.prototype:HTMLInputElement.prototype;const setter=Object.getOwnPropertyDescriptor(proto,'value')?.set;if(!setter)throw Error('Field is not editable.');setter.call(el,args.value);el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}))}return {acted:true}
+  el.focus();if(el.isContentEditable){const value=String(args.value),selection=getSelection(),range=document.createRange();range.selectNodeContents(el);selection.removeAllRanges();selection.addRange(range);let inserted=false;try{inserted=document.execCommand('insertText',false,value)}catch{}if(!inserted)throw Error('Message composer did not accept text insertion. No message was sent.');await new Promise(resolve=>setTimeout(resolve,120));const currentEl=el.isConnected?el:document.activeElement,actual=(currentEl?.innerText||currentEl?.textContent||'').replace(/\u00a0/g,' ').trim();if(actual!==value.replace(/\u00a0/g,' ').trim())throw Error('Message composer did not accept the approved text. No message was sent.')}else{const proto=el.tagName==='TEXTAREA'?HTMLTextAreaElement.prototype:HTMLInputElement.prototype;const setter=Object.getOwnPropertyDescriptor(proto,'value')?.set;if(!setter)throw Error('Field is not editable.');setter.call(el,args.value);el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}))}return {acted:true}
  },[a,node?.label||'',observation.url,upload]);
  observation=null;if(result?.photoAttached)photo=null;if(opensThread)await adoptOpenedThread(previousTabId,knownTabIds);return result;
 }

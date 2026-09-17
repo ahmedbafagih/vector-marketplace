@@ -2,7 +2,7 @@
 
 A local macOS workspace for Marketplace sourcing, inventory, selling conversations, and pickup coordination. Bring your own Facebook session and supported Codex or Claude Code CLI.
 
-**Status: testing preview, version 0.2.23.** This is open source software for supervised testing. Browser automation depends on Facebook's interface. The latest composer recovery change needs live verification, and a complete automated negotiation through confirmed pickup has not yet been demonstrated for this release. It is not a production reliability or earnings guarantee.
+**Status: testing preview, version 0.2.29.** This is open source software for supervised testing. Browser automation depends on Facebook's interface. A complete automated negotiation through confirmed pickup has not yet been demonstrated for this release. It is not a production reliability or earnings guarantee.
 
 ## What it does
 
@@ -22,15 +22,23 @@ It cannot guarantee resale demand, seller responses, successful purchases, or pr
 - Google Chrome with a Facebook account that can access Marketplace.
 - Apple command line developer tools with Swift, and Python 3 to build the app.
 - Node.js 22 or later and npm to run the JavaScript tests.
-- An independently installed and signed-in Codex CLI or Claude Code CLI for AI features. Provider access and usage limits apply. Vector does not include an AI subscription or promise compatibility with every CLI version.
+- An independently installed and signed-in Codex CLI or Claude Code CLI for AI features. The Codex path requests `gpt-5.6-luna` with medium reasoning. Provider access and usage limits apply. Vector does not include an AI subscription or promise compatibility with every CLI version.
 
-## Build and test
+## Install
 
-For an Apple Silicon Mac, a locally built app and matching companion are available on the [testing preview release page](https://github.com/ahmedbafagih/vector-marketplace/releases/tag/v0.2.23-preview.1). Download `Vector-0.2.23-macOS-arm64-preview.zip`, unzip it, then follow **First run** below. Checksums accompany the downloads. The app is not notarized; building from source is also supported.
+The shortest source setup is one local command:
 
 ```sh
 git clone https://github.com/ahmedbafagih/vector-marketplace.git
 cd vector-marketplace
+./scripts/install-local.sh
+```
+
+The installer builds and checks Vector, installs it in `~/Applications`, and opens the app plus its bundled Chrome companion folder. It does not need administrator access. Chrome still requires one manual **Load unpacked** step because the companion is not in the Chrome Web Store. See [INSTALL.md](INSTALL.md) for the exact human steps and a ready-to-paste AI coding agent prompt.
+
+To build and test without installing:
+
+```sh
 npm ci
 python3 build.py
 npm test
@@ -46,13 +54,11 @@ Output: `build/Vector.app`, a matching companion ZIP, and `build/release.json`. 
 
 ## First run
 
-1. Copy `build/Vector.app` into your user Applications folder and launch it. Keep it in a stable location, because Chrome uses the native helper inside that app.
-2. In Vector, open Connections and check your chosen AI CLI connection.
-3. In Chrome, open `chrome://extensions`, enable Developer mode, and click **Load unpacked**.
-4. Select the folder inside the installed app: `Vector.app/Contents/Resources/Extension`. In the folder picker, use Command+Shift+G to enter its full path, for example `~/Applications/Vector.app/Contents/Resources/Extension`.
-5. Sign in to Facebook in Chrome. Open the Vector Marketplace Companion popup and choose **Connect Marketplace**.
-6. Check Connections in Vector. Confirm that Chrome and AI are connected and that the companion version is 0.2.23.
-7. Set your own buying search area, spending limits, and selling pickup spot before enabling automation. Begin with **Find only** and one listing while reviewing Activity and Needs attention.
+1. In Chrome, open `chrome://extensions`, enable Developer mode, and click **Load unpacked**.
+2. Select `~/Applications/Vector.app/Contents/Resources/Extension`. In the folder picker, use Command+Shift+G to paste that path.
+3. Sign in to Facebook in Chrome. Open the Vector Marketplace Companion popup and choose **Connect Marketplace**.
+4. Complete Vector's five-screen setup guide. It asks what to find, where to search, how far you will travel, the deal limits, and whether Vector may contact sellers.
+5. Run the built-in connection check. Vector starts its first search only after the AI and Chrome checks pass. The recommended permission is **Find and review**, which does not contact sellers.
 
 Automation can send real messages or publish real listings when you enable those actions. Keep the app and Chrome running and the Mac awake and online. Vector uses a dedicated Marketplace window that can stay behind your other windows. Facebook sign-in or verification must be completed by you.
 
@@ -77,6 +83,7 @@ The JavaScript suite covers simulated native/browser/AI flows, conversation iden
 | `Extension/` | Packaged Chrome observation and action code |
 | `Template.html` | UI template used to generate `Web/index.html` |
 | `Tests/` | Synthetic tests; no live messages sent by the JavaScript suite |
+| `INSTALL.md`, `AGENTS.md` | Human and AI coding agent setup instructions |
 
 ## Contributing and license
 

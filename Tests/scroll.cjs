@@ -5,10 +5,10 @@ const panel={isConnected:true,scrollTop:0,scrollHeight:1000,clientHeight:200,ove
 const page={...panel,scrollTop:0,clientHeight:600},button={isConnected:true,parentElement:panel,scrollHeight:30,clientHeight:30,overflowY:'visible'};
 const url='https://www.facebook.com/marketplace/inbox?targetTab=SELLER',context={location:{href:url},vectorElements:[button],document:{scrollingElement:page},getComputedStyle:e=>({overflowY:e.overflowY})};
 const act=vm.runInNewContext('('+match[1]+')',context);
-let result=act({action:'scroll',id:0},'Buyer',url,null);assert.equal(panel.scrollTop,150);assert.equal(page.scrollTop,0);assert.equal(result.scrolled,true);
-act({action:'scroll',id:0,value:'up'},'Buyer',url,null);assert.equal(panel.scrollTop,0);
-panel.scrollTop=800;result=act({action:'scroll',id:0},'Buyer',url,null);assert(result.atEnd);assert.equal(result.scrolled,false);
-button.isConnected=false;assert.throws(()=>act({action:'scroll',id:0},'Buyer',url,null),/disappeared/);
-act({action:'scroll',id:-1},'',url,null);assert.equal(page.scrollTop,400);
-assert.throws(()=>act({action:'scroll',id:-1},'',url+'/wrong',null),/changed/);
-console.log('PASS targeted nested scrolling, upward scrolling, end detection, stale target rejection, document fallback and URL guard');
+(async()=>{let result=await act({action:'scroll',id:0},'Buyer',url,null);assert.equal(panel.scrollTop,150);assert.equal(page.scrollTop,0);assert.equal(result.scrolled,true);
+await act({action:'scroll',id:0,value:'up'},'Buyer',url,null);assert.equal(panel.scrollTop,0);
+panel.scrollTop=800;result=await act({action:'scroll',id:0},'Buyer',url,null);assert(result.atEnd);assert.equal(result.scrolled,false);
+button.isConnected=false;await assert.rejects(act({action:'scroll',id:0},'Buyer',url,null),/disappeared/);
+await act({action:'scroll',id:-1},'',url,null);assert.equal(page.scrollTop,400);
+await assert.rejects(act({action:'scroll',id:-1},'',url+'/wrong',null),/changed/);
+console.log('PASS targeted nested scrolling, upward scrolling, end detection, stale target rejection, document fallback and URL guard')})().catch(error=>{console.error(error);process.exitCode=1});

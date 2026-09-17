@@ -7,6 +7,6 @@ async function run(events,progress){let index=0,scrolls=0;const c=vm.createConte
  x=await run([{loading:[],label:'A',scroll:{scrolled:false,atEnd:true}},{loading:[],label:'B',scroll:{scrolled:false,atEnd:true}},{loading:[],label:'B',scroll:{scrolled:false,atEnd:true}},{loading:[],label:'B',scroll:{scrolled:false,atEnd:true}}]);assert.equal(x.result.result.complete,true);assert.equal(x.scrolls,3);
  x=await run([{loading:[],noNode:true,scroll:{scrolled:false,atEnd:true}}]);assert.equal(x.result.result.complete,false);
  x=await run([{loading:['Loading'],scroll:{scrolled:true,atEnd:false}}]);assert.equal(x.scrolls,48);assert.equal(x.result.result.complete,false);
- x=await run([{loading:[],scroll:{scrolled:false,atEnd:true}},{loading:[],scroll:{scrolled:false,atEnd:true}}],{candidates:[],reads:{},censusComplete:true,censusVersion:3,coverage:'Legacy'});assert.equal(x.result.result.complete,true);assert.equal(x.job.conversationProgress.censusVersion,4);
+ x=await run([{loading:[],scroll:{scrolled:false,atEnd:true}},{loading:[],scroll:{scrolled:false,atEnd:true}}],{candidates:[],reads:{},censusComplete:true,censusVersion:3,coverage:'Legacy'});assert.equal(x.result.result.complete,true);assert.equal(x.job.conversationProgress.censusVersion,5);
  console.log('PASS deterministic inbox boundary waits for loading, resets on new rows, caps work and migrates legacy coverage');
 })().catch(e=>{console.error(e);process.exitCode=1});

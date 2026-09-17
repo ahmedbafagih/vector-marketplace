@@ -1,7 +1,6 @@
 from pathlib import Path
-import re, subprocess, shutil, plistlib, sys, json, zipfile, hashlib, platform
+import re, subprocess, shutil, plistlib, sys, json, zipfile, hashlib
 ROOT=Path(__file__).resolve().parent
-target=platform.machine()+'-apple-macos14.0'
 version=json.loads((ROOT/'Extension/manifest.json').read_text())['version']
 source=ROOT/'Template.html'
 s=source.read_text()
@@ -24,7 +23,7 @@ s=s.replace('Sample data','Your data').replace('Sample estimates.','Estimates.')
 s=s.replace('Ask or command. Try: show furniture','Ask or command. Try: show inventory').replace('Run demo command','Run command')
 s=s.replace('businessView();renderInventory();renderCore();','businessView();renderInventory();renderCore();nativeDecorate();saveAfterRender();')
 # Replace the last bootstrap, leaving existing event listeners and preserving the approved visuals.
-s=s.replace("render();$$('[data-boot]')", (ROOT/'Web/native.js').read_text()+"\n"+(ROOT/'Web/sourcing.js').read_text()+"\n"+(ROOT/'Web/pricing.js').read_text()+"\n"+(ROOT/'Web/imports.js').read_text()+"\n"+(ROOT/'Web/attention.js').read_text()+"\n"+(ROOT/'Web/connections.js').read_text()+"\n"+(ROOT/'Web/operations.js').read_text()+"\n"+(ROOT/'Web/conversations.js').read_text()+"\nrender();$$('[data-boot]')")
+s=s.replace("render();$$('[data-boot]')", (ROOT/'Web/onboarding.js').read_text()+"\n"+(ROOT/'Web/native.js').read_text()+"\n"+(ROOT/'Web/sourcing.js').read_text()+"\n"+(ROOT/'Web/pricing.js').read_text()+"\n"+(ROOT/'Web/imports.js').read_text()+"\n"+(ROOT/'Web/attention.js').read_text()+"\n"+(ROOT/'Web/connections.js').read_text()+"\n"+(ROOT/'Web/operations.js').read_text()+"\n"+(ROOT/'Web/conversations.js').read_text()+"\nrender();$$('[data-boot]')")
 s=s.replace("+l.id+", "+esc(l.id)+").replace("+l.state+", "+esc(l.state)+")
 # Shutdown and page events use a single serialized snapshot, committed by the native host.
 s=s.replace('<style>','<style>\nbody{margin:0;background:#080f17}#marketplace-flight-deck{border-radius:0;min-height:100vh}#marketplace-flight-deck .native-jobs article{padding:14px 0;border-bottom:1px solid #263644}#marketplace-flight-deck .native-jobs span{display:block;color:#a0b3c2}#marketplace-flight-deck .mp-top{flex-wrap:wrap}\n',1)
@@ -35,14 +34,11 @@ html='<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" con
 app=ROOT/'build/Vector.app';contents=app/'Contents';(contents/'MacOS').mkdir(parents=True,exist_ok=True)
 if (contents/'Resources').exists():shutil.rmtree(contents/'Resources')
 shutil.copytree(ROOT/'Web',contents/'Resources')
-shutil.copytree(ROOT/'licenses',contents/'Resources/ThirdPartyLicenses')
-for notice in ['LICENSE','PRIVACY.md','THIRD_PARTY_NOTICES.md']:
-    shutil.copy2(ROOT/notice,contents/'Resources'/notice)
 plist={'CFBundleName':'Vector','CFBundleDisplayName':'Vector','CFBundleIdentifier':'com.ahmed.vector','CFBundleVersion':version,'CFBundleShortVersionString':version,'CFBundleExecutable':'Vector','CFBundlePackageType':'APPL','LSMinimumSystemVersion':'14.0','NSHighResolutionCapable':True,'NSPrincipalClass':'NSApplication','NSSupportsAutomaticTermination':False}
 (contents/'Info.plist').write_bytes(plistlib.dumps(plist))
-subprocess.run(['swiftc','-target',target,'-swift-version','5','-O','-framework','Cocoa','-framework','CoreLocation','-framework','MapKit','-framework','WebKit','-framework','ImageIO','-framework','UniformTypeIdentifiers','-framework','UserNotifications','-lsqlite3',str(ROOT/'Shared/Wire.swift'),*[str(p) for p in sorted((ROOT/'Sources').glob('*.swift'))],'-o',str(contents/'MacOS/Vector')],check=True)
+subprocess.run(['swiftc','-swift-version','5','-O','-framework','Cocoa','-framework','CoreLocation','-framework','MapKit','-framework','WebKit','-framework','ImageIO','-framework','UniformTypeIdentifiers','-framework','UserNotifications','-lsqlite3',str(ROOT/'Shared/Wire.swift'),*[str(p) for p in sorted((ROOT/'Sources').glob('*.swift'))],'-o',str(contents/'MacOS/Vector')],check=True)
 shutil.copytree(ROOT/'Extension',contents/'Resources/Extension',dirs_exist_ok=True)
-subprocess.run(['swiftc','-target',target,'-O',str(ROOT/'Shared/Wire.swift'),str(ROOT/'NativeHost/main.swift'),'-o',str(contents/'MacOS/VectorChromeHost')],check=True)
+subprocess.run(['swiftc','-O',str(ROOT/'Shared/Wire.swift'),str(ROOT/'NativeHost/main.swift'),'-o',str(contents/'MacOS/VectorChromeHost')],check=True)
 subprocess.run(['codesign','--force','--deep','--sign','-',str(app)],check=True)
 # The review ZIP and app companion always come from the same build.
 archive=ROOT/'build'/f'Vector-Marketplace-Companion-{version}.zip'

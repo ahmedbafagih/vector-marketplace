@@ -1,0 +1,13 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const url='https://www.facebook.com/messages/t/123/',other='https://www.facebook.com/messages/t/456/';
+const lead={id:'Buyer',url,last:'Only $90',history:[{side:'them',text:'Only $90'},{side:'us',text:'I can do $95'},{side:'them',text:'I accept $95'},{side:'us',text:'When can you collect?'},{side:'them',text:'Only $90'}]};
+const safe={id:'Other',url:other,last:'Available?',history:[{side:'them',text:'Available?'}]};
+const work={enabled:false,leads:[lead,safe],conversationProgress:{candidates:[],reads:{old:{lead},alias:{lead},safe:{lead:safe}}}},queued=[];
+const c=vm.createContext({Date,Map,Set,String,JSON,Error,Array,Object,rows:[{id:1,view:'Selling'}],nativeState:{jobs:[{kind:'reply',itemId:1,leadURL:url,state:'queued'},{kind:'manual',itemId:1,leadURL:url,state:'queued'}]},workFor:()=>work,validThreadURL:u=>/^https:\/\/www\.facebook\.com\/messages\/t\/\d+\/?$/.test(u||''),queueJob:(kind,row,extra)=>queued.push({kind,...extra})});
+vm.runInContext(fs.readFileSync(__dirname+'/../Web/conversations.js','utf8'),c);
+c.recoverReplayedConversationReads();
+assert.equal(queued.length,1);assert.equal(queued[0].incremental,true);assert.deepEqual([...queued[0].targetCandidateKeys],[url.slice(0,-1)]);
+assert.deepEqual(Object.keys(work.conversationProgress.reads),['safe']);assert.equal(work.leads[0],lead,'recovery waits for live evidence instead of inventing a replacement state');
+assert.equal(c.nativeState.jobs[0].state,'cancelled');assert.equal(c.nativeState.jobs[1].state,'queued');assert.equal(work.enabled,false,'individual automation choice stays off');
+c.recoverReplayedConversationReads();assert.equal(queued.length,1,'one-time recovery must not consume repeated AI reads');
+console.log('PASS replayed history queues one fresh thread check, clears aliases and preserves manual work and automation choices');
