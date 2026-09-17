@@ -40,16 +40,32 @@ subprocess.run(['swiftc','-swift-version','5','-O','-framework','Cocoa','-framew
 shutil.copytree(ROOT/'Extension',contents/'Resources/Extension',dirs_exist_ok=True)
 subprocess.run(['swiftc','-O',str(ROOT/'Shared/Wire.swift'),str(ROOT/'NativeHost/main.swift'),'-o',str(contents/'MacOS/VectorChromeHost')],check=True)
 subprocess.run(['codesign','--force','--deep','--sign','-',str(app)],check=True)
-# The review ZIP and app companion always come from the same build.
+# The unpacked companion keeps a fixed key so its developer-install ID remains stable.
+# Chrome Web Store assigns the published item ID and rejects a manifest key, so the
+# store archive contains the same reviewed files with only that field removed.
 archive=ROOT/'build'/f'Vector-Marketplace-Companion-{version}.zip'
+store_archive=ROOT/'build'/f'Vector-Marketplace-Companion-{version}-store.zip'
 files=sorted(p for p in (ROOT/'Extension').rglob('*') if p.is_file() and p.name!='.DS_Store')
 with zipfile.ZipFile(archive,'w',zipfile.ZIP_DEFLATED) as z:
     for p in files:z.write(p,p.relative_to(ROOT/'Extension'))
+with zipfile.ZipFile(store_archive,'w',zipfile.ZIP_DEFLATED) as z:
+    for p in files:
+        relative=p.relative_to(ROOT/'Extension')
+        if relative.as_posix()=='manifest.json':
+            store_manifest=json.loads(p.read_text())
+            store_manifest.pop('key',None)
+            z.writestr(str(relative),json.dumps(store_manifest,indent=2)+'\n')
+        else:z.write(p,relative)
 with zipfile.ZipFile(archive) as z:
     for p in files:
         relative=p.relative_to(ROOT/'Extension')
         if p.read_bytes()!=z.read(str(relative)) or p.read_bytes()!=(contents/'Resources/Extension'/relative).read_bytes():
             raise RuntimeError(f'Companion packaging mismatch: {relative}')
-(ROOT/'build/release.json').write_text(json.dumps({'version':version,'archive':archive.name,'sha256':hashlib.sha256(archive.read_bytes()).hexdigest(),'files':{str(p.relative_to(ROOT/'Extension')):hashlib.sha256(p.read_bytes()).hexdigest() for p in files}},indent=2)+'\n')
+with zipfile.ZipFile(store_archive) as z:
+    store_manifest=json.loads(z.read('manifest.json'))
+    if 'key' in store_manifest:raise RuntimeError('Chrome Web Store package contains a forbidden manifest key.')
+    if store_manifest.get('version')!=version:raise RuntimeError('Chrome Web Store package version mismatch.')
+(ROOT/'build/release.json').write_text(json.dumps({'version':version,'archive':archive.name,'sha256':hashlib.sha256(archive.read_bytes()).hexdigest(),'storeArchive':store_archive.name,'storeSha256':hashlib.sha256(store_archive.read_bytes()).hexdigest(),'files':{str(p.relative_to(ROOT/'Extension')):hashlib.sha256(p.read_bytes()).hexdigest() for p in files}},indent=2)+'\n')
 print(app)
 print(archive)
+print(store_archive)

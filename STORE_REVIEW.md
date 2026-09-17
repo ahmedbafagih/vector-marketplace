@@ -2,6 +2,8 @@
 
 Vector Marketplace Companion requires the Vector macOS desktop app and a Facebook account with Marketplace access.
 
+The upload artifact is `build/Vector-Marketplace-Companion-0.2.30-store.zip`. The ordinary archive preserves the stable unpacked developer ID and is not accepted by the Chrome Web Store.
+
 ## Install the desktop app
 
 1. Clone https://github.com/ahmedbafagih/vector-marketplace on a Mac running macOS 14 or newer.

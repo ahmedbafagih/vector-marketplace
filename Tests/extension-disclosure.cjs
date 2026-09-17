@@ -23,5 +23,10 @@ assert.match(onboarding,/Add to Chrome/);
 assert.match(onboarding,/Developer installation/);
 assert.match(onboarding,/openCompanionStore/);
 assert.match(native,/url\.host=="chromewebstore\.google\.com"/);
-assert.match(native,/elkhmobmkaiepgennfgabmbolldjlmpb/);
+assert.match(onboarding,/cfkdpkejcgfgokangnmkoofnmigkkokg/);
+assert.match(native,/cfkdpkejcgfgokangnmkoofnmigkkokg/);
+assert.deepEqual(JSON.parse(fs.readFileSync(path.join(root,'Web/chrome-config.json'),'utf8')).extensionIDs,[
+ 'elkhmobmkaiepgennfgabmbolldjlmpb',
+ 'cfkdpkejcgfgokangnmkoofnmigkkokg'
+]);
 console.log('PASS store installation guidance and pre-connection disclosure');
