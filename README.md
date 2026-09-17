@@ -1,8 +1,10 @@
-# Vector Marketplace
+# Marketplace AI
+
+Free and open source Facebook Marketplace automation by [Floss and Pixel](https://flossandpixel.com).
 
 A local macOS workspace for Marketplace sourcing, inventory, selling conversations, and pickup coordination. Bring your own Facebook session and supported Codex or Claude Code CLI.
 
-**Status: testing preview, version 0.2.30.** This is open source software for supervised testing. Browser automation depends on Facebook's interface. A complete automated negotiation through confirmed pickup has not yet been demonstrated for this release. It is not a production reliability or earnings guarantee.
+**Status: testing preview, version 0.2.31.** This is open source software for supervised testing. Browser automation depends on Facebook's interface. A complete automated negotiation through confirmed pickup has not yet been demonstrated for this release. It is not a production reliability or earnings guarantee.
 
 ## What it does
 
@@ -22,7 +24,7 @@ It cannot guarantee resale demand, seller responses, successful purchases, or pr
 - Google Chrome with a Facebook account that can access Marketplace.
 - Apple command line developer tools with Swift, and Python 3 to build the app.
 - Node.js 22 or later and npm to run the JavaScript tests.
-- An independently installed and signed-in Codex CLI or Claude Code CLI for AI features. The Codex path requests `gpt-5.6-luna` with medium reasoning. Provider access and usage limits apply. Vector does not include an AI subscription or promise compatibility with every CLI version.
+- An independently installed and signed-in Codex CLI or Claude Code CLI for AI features. The Codex path requests `gpt-5.6-luna` with medium reasoning. Provider access and usage limits apply. Marketplace AI does not include an AI subscription or promise compatibility with every CLI version.
 
 ## Install
 
@@ -34,7 +36,7 @@ cd vector-marketplace
 ./scripts/install-local.sh
 ```
 
-The installer builds and checks Vector, installs it in `~/Applications`, and opens the app. It does not need administrator access. The setup guide opens the Chrome Web Store companion and verifies the connection. Until the store review is complete, testers can use the clearly labeled developer installation in [INSTALL.md](INSTALL.md).
+The installer builds and checks Marketplace AI, installs it in `~/Applications`, and opens the app. It does not need administrator access. The setup guide opens the Chrome Web Store companion and verifies the connection. Until the store review is complete, testers can use the clearly labeled developer installation in [INSTALL.md](INSTALL.md).
 
 To build and test without installing:
 
@@ -50,17 +52,17 @@ If Xcode is selected but its setup is incomplete, finish Xcode setup yourself, o
 DEVELOPER_DIR=/Library/Developer/CommandLineTools python3 build.py
 ```
 
-Output: `build/Vector.app`, a matching companion ZIP, and `build/release.json`. The app is ad hoc signed for local development, not Developer ID signed or notarized. macOS may require review through its normal Privacy & Security controls. There is no Chrome Web Store release or automatic updater yet.
+Output: `build/Marketplace AI.app`, a matching companion ZIP, and `build/release.json`. The app is ad hoc signed for local development, not Developer ID signed or notarized. macOS may require review through its normal Privacy & Security controls. There is no Chrome Web Store release or automatic updater yet.
 
 ## First run
 
 1. In Chrome, open `chrome://extensions`, enable Developer mode, and click **Load unpacked**.
-2. Select `~/Applications/Vector.app/Contents/Resources/Extension`. In the folder picker, use Command+Shift+G to paste that path.
-3. Sign in to Facebook in Chrome. Open the Vector Marketplace Companion popup and choose **Connect Marketplace**.
-4. Complete Vector's five-screen setup guide. It asks what to find, where to search, how far you will travel, the deal limits, and whether Vector may contact sellers.
-5. Run the built-in connection check. Vector starts its first search only after the AI and Chrome checks pass. The recommended permission is **Find and review**, which does not contact sellers.
+2. Select `~/Applications/Marketplace AI.app/Contents/Resources/Extension`. In the folder picker, use Command+Shift+G to paste that path.
+3. Sign in to Facebook in Chrome. Open the Marketplace AI popup and choose **Connect Marketplace**.
+4. Complete Marketplace AI's five-screen setup guide. It asks what to find, where to search, how far you will travel, the deal limits, and whether Marketplace AI may contact sellers.
+5. Run the built-in connection check. Marketplace AI starts its first search only after the AI and Chrome checks pass. The recommended permission is **Find and review**, which does not contact sellers.
 
-Automation can send real messages or publish real listings when you enable those actions. Keep the app and Chrome running and the Mac awake and online. Vector uses a dedicated Marketplace window that can stay behind your other windows. Facebook sign-in or verification must be completed by you.
+Automation can send real messages or publish real listings when you enable those actions. Keep the app and Chrome running and the Mac awake and online. Marketplace AI uses a dedicated Marketplace window that can stay behind your other windows. Facebook sign-in or verification must be completed by you.
 
 When updating a source build, rebuild and replace the installed app, then reload its existing unpacked companion in `chrome://extensions`. Verify the running version again. Files on disk and an already-running Chrome worker can be different versions.
 
@@ -87,4 +89,4 @@ The JavaScript suite covers simulated native/browser/AI flows, conversation iden
 
 ## Contributing and license
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md). Vector is MIT licensed. Third-party libraries and brand marks retain their own rights; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Vector is not affiliated with Meta, Google, OpenAI, or Anthropic.
+See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md). Marketplace AI is MIT licensed. Third-party libraries and brand marks retain their own rights; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Marketplace AI is not affiliated with Meta, Google, OpenAI, or Anthropic.

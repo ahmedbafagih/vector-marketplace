@@ -4,7 +4,7 @@ import shutil
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "StoreAssets"
-REVIEW = Path.home() / "Downloads" / "Vector-Chrome-Store-Assets-Review"
+REVIEW = Path.home() / "Downloads" / "Marketplace-AI-Chrome-Store-Assets-Review"
 OUT.mkdir(exist_ok=True)
 REVIEW.mkdir(parents=True, exist_ok=True)
 
@@ -100,17 +100,17 @@ shots = [
 ]
 for source, destination in shots:
     screenshot(OUT / source, OUT / destination)
-popup_screenshot(OUT / "companion-popup-source.png", OUT / "screenshot-5-disclosure-1280x800.png")
 
-for name in ["store-icon-128.png", "small-promo-440x280.png", "marquee-1400x560.png", *(item[1] for item in shots), "screenshot-5-disclosure-1280x800.png"]:
+
+for name in ["store-icon-128.png", "small-promo-440x280.png", "marquee-1400x560.png", *(item[1] for item in shots)]:
     shutil.copy2(OUT / name, REVIEW / name)
 
 previews = [Image.open(OUT / item[1]).convert("RGB").resize((480, 300), Image.Resampling.LANCZOS) for item in shots]
-previews.append(Image.open(OUT / "screenshot-5-disclosure-1280x800.png").convert("RGB").resize((480, 300), Image.Resampling.LANCZOS))
-sheet = Image.new("RGB", (980, 930), INK)
+
+sheet = Image.new("RGB", (980, 620), INK)
 for index, preview in enumerate(previews):
     sheet.paste(preview, (10 + (index % 2) * 490, 10 + (index // 2) * 310))
-sheet.save(REVIEW / "Vector-Store-Screenshots-Review.png", optimize=True)
+sheet.save(REVIEW / "Marketplace-AI-Store-Screenshots-Review.png", optimize=True)
 
 print(OUT)
 print(REVIEW)

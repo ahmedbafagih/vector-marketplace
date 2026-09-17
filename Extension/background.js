@@ -3,9 +3,9 @@ let port=null, ready=false, tabId=null, photo=null, epoch=0, observation=null, c
 const allowed = value => {try{const u=new URL(value);return u.protocol==='https:'&&['www.facebook.com','facebook.com','m.facebook.com'].includes(u.hostname)&&(u.pathname==='/marketplace'||u.pathname.startsWith('/marketplace/')||/^\/messages\/t\/[^/]+\/?$/.test(u.pathname))}catch{return false}};
 async function updateStatus(message){await chrome.storage.local.set({status:message,connected:ready});await chrome.action.setBadgeText({text:ready?'ON':''})}
 function scheduleReconnect(){if(!reconnectEnabled)return;clearTimeout(reconnectTimer);reconnectTimer=setTimeout(()=>{reconnectTimer=null;connect()},retryDelay);retryDelay=Math.min(30000,retryDelay*2);chrome.alarms?.create('vector-reconnect',{delayInMinutes:.5})}
-function lostConnection(p){if(port!==p)return;port=null;ready=false;photo=null;observation=null;updateStatus(reconnectEnabled?'Reconnecting to Vector…':'Disconnected');scheduleReconnect()}
-function connect(){if(port||!reconnectEnabled)return;let p;try{p=chrome.runtime.connectNative('com.vector.marketplace')}catch(e){updateStatus('Waiting for Vector');scheduleReconnect();return}port=p;
- p.onMessage.addListener(m=>{if(port!==p)return;if(m.event==='ready'){ready=true;retryDelay=1000;clearTimeout(reconnectTimer);chrome.alarms?.clear('vector-reconnect');updateStatus('Connected to Vector');return}if(m.event==='unavailable'){lostConnection(p);p.disconnect();return}if(!m.id)return;const handle=async()=>{if(port!==p)return;if(Date.now()>m.expiresAt){p.postMessage({id:m.id,ok:false,error:'Browser request expired before execution. No action was taken.'});return}try{const value=await dispatch(m);if(port===p)p.postMessage({id:m.id,ok:true,value})}catch(e){if(port===p)p.postMessage({id:m.id,ok:false,error:e.message})}};if(m.method==='status')void handle();else chain=chain.then(handle)});
+function lostConnection(p){if(port!==p)return;port=null;ready=false;photo=null;observation=null;updateStatus(reconnectEnabled?'Reconnecting to Marketplace AI…':'Disconnected');scheduleReconnect()}
+function connect(){if(port||!reconnectEnabled)return;let p;try{p=chrome.runtime.connectNative('com.vector.marketplace')}catch(e){updateStatus('Waiting for Marketplace AI');scheduleReconnect();return}port=p;
+ p.onMessage.addListener(m=>{if(port!==p)return;if(m.event==='ready'){ready=true;retryDelay=1000;clearTimeout(reconnectTimer);chrome.alarms?.clear('vector-reconnect');updateStatus('Connected to Marketplace AI');return}if(m.event==='unavailable'){lostConnection(p);p.disconnect();return}if(!m.id)return;const handle=async()=>{if(port!==p)return;if(Date.now()>m.expiresAt){p.postMessage({id:m.id,ok:false,error:'Browser request expired before execution. No action was taken.'});return}try{const value=await dispatch(m);if(port===p)p.postMessage({id:m.id,ok:true,value})}catch(e){if(port===p)p.postMessage({id:m.id,ok:false,error:e.message})}};if(m.method==='status')void handle();else chain=chain.then(handle)});
  p.onDisconnect.addListener(()=>{void chrome.runtime.lastError;lostConnection(p)});p.postMessage({event:'hello',version:chrome.runtime.getManifest().version});
 }
 async function restoreConnection(){const s=await chrome.storage.local.get(['reconnectEnabled','marketplaceTabId']);reconnectEnabled=s.reconnectEnabled===true;tabId=s.marketplaceTabId??null;if(reconnectEnabled)connect()}
@@ -21,7 +21,7 @@ async function target(){
  let t=null;
  if(tabId!==null){try{t=await chrome.tabs.get(tabId)}catch{tabId=null;await chrome.storage.local.set({marketplaceTabId:null})}}
  if(!t||!allowed(t.url))t=await discoverMarketplaceTab();
- if(!t)throw Error('Open Facebook Marketplace in Chrome. Vector will connect automatically.');
+ if(!t)throw Error('Open Facebook Marketplace in Chrome. Marketplace AI will connect automatically.');
  if(!allowed(t.url))throw Error('Finish Facebook verification in Chrome, then return to Marketplace.');return t
 }
 // Readiness is the usable document, not completion of every image/network request.
@@ -38,7 +38,7 @@ async function settled(id){
  }
  throw Error('Marketplace document is not ready yet. No action was taken.');
 }
-async function run(func,args=[]){const session=port;const t=await target();if(!ready||port!==session)throw Error('Vector disconnected before action.');const result=await chrome.scripting.executeScript({target:{tabId:t.id},func,args});return result[0]?.result}
+async function run(func,args=[]){const session=port;const t=await target();if(!ready||port!==session)throw Error('Marketplace AI disconnected before action.');const result=await chrome.scripting.executeScript({target:{tabId:t.id},func,args});return result[0]?.result}
 async function ensureWorkspace(id,focus=false){
  const tab=await chrome.tabs.get(id),win=await chrome.windows.get(tab.windowId,{populate:true});
  // Keep Marketplace active in its own window without selecting a different
@@ -51,8 +51,8 @@ async function ensureWorkspace(id,focus=false){
 const sameAddress=(a,b)=>{try{const x=new URL(a),y=new URL(b);return x.origin===y.origin&&x.pathname.replace(/\/$/,'')===y.pathname.replace(/\/$/,'')&&x.search===y.search}catch{return false}};
 async function openMarketplace(url,focus=false){const session=port;if(!allowed(url))throw Error('This URL is outside Marketplace.');if(tabId!==null){try{await chrome.tabs.get(tabId)}catch{tabId=null}}
  if(tabId===null){const candidates=await chrome.tabs.query({url:['https://www.facebook.com/marketplace/*','https://facebook.com/marketplace/*']});tabId=candidates[0]?.id??null}
- if(port!==session)throw Error('Vector disconnected before navigation.');
- if(tabId===null){const win=await chrome.windows.create({url,type:'normal',focused:focus,width:1200,height:900});tabId=win.tabs[0].id}else{await ensureWorkspace(tabId,focus);if(port!==session)throw Error('Vector disconnected before navigation.');const current=await chrome.tabs.get(tabId),thread=/^https:\/\/(?:www\.)?facebook\.com\/messages\/t\//.test(url);if(thread&&!sameAddress(current.url,url)&&!sameAddress(current.pendingUrl,url)){const fresh=await chrome.tabs.create({windowId:current.windowId,url,active:true});try{await settled(fresh.id);const opened=await chrome.tabs.get(fresh.id);if(!sameAddress(opened.url,url))throw Error('Facebook did not keep the selected Messenger conversation open.');await chrome.tabs.remove(current.id);tabId=fresh.id}catch(e){await chrome.tabs.remove(fresh.id).catch(()=>{});throw e}}else if(!sameAddress(current.url,url)&&!sameAddress(current.pendingUrl,url))await chrome.tabs.update(tabId,{url})}
+ if(port!==session)throw Error('Marketplace AI disconnected before navigation.');
+ if(tabId===null){const win=await chrome.windows.create({url,type:'normal',focused:focus,width:1200,height:900});tabId=win.tabs[0].id}else{await ensureWorkspace(tabId,focus);if(port!==session)throw Error('Marketplace AI disconnected before navigation.');const current=await chrome.tabs.get(tabId),thread=/^https:\/\/(?:www\.)?facebook\.com\/messages\/t\//.test(url);if(thread&&!sameAddress(current.url,url)&&!sameAddress(current.pendingUrl,url)){const fresh=await chrome.tabs.create({windowId:current.windowId,url,active:true});try{await settled(fresh.id);const opened=await chrome.tabs.get(fresh.id);if(!sameAddress(opened.url,url))throw Error('Facebook did not keep the selected Messenger conversation open.');await chrome.tabs.remove(current.id);tabId=fresh.id}catch(e){await chrome.tabs.remove(fresh.id).catch(()=>{});throw e}}else if(!sameAddress(current.url,url)&&!sameAddress(current.pendingUrl,url))await chrome.tabs.update(tabId,{url})}
  chrome.storage.local.set({marketplaceTabId:tabId});observation=null;await settled(tabId);return {opened:true};
 }
 async function adoptOpenedThread(previousTabId,knownTabIds){
@@ -62,10 +62,10 @@ async function adoptOpenedThread(previousTabId,knownTabIds){
   const tabs=await chrome.tabs.query({url:['https://www.facebook.com/messages/t/*','https://facebook.com/messages/t/*']});const opened=tabs.find(x=>!knownTabIds.has(x.id));if(opened){tabId=opened.id;await chrome.storage.local.set({marketplaceTabId:tabId});await chrome.tabs.remove(previousTabId);await settled(tabId);return}
   await new Promise(resolve=>setTimeout(resolve,150));
  }
- throw Error('Messenger thread did not open in the Vector browser window.');
+ throw Error('Messenger thread did not open in the Marketplace AI browser window.');
 }
 async function dispatch(m){
- if(!ready)throw Error('Vector disconnected.');const a=m.args||{};
+ if(!ready)throw Error('Marketplace AI disconnected.');const a=m.args||{};
  if(m.method==='status'){let tabConnected=false;try{await target();tabConnected=true}catch{}return {connected:true,tabConnected,version:chrome.runtime.getManifest().version,protocol:1,readiness:'document-v6'}}
  if(m.method==='open')return openMarketplace(a.url,true);
  if(m.method==='photo'){if(!/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(a.data)||a.data.length>810000)throw Error('Invalid photo.');photo=a.data;return {ready:true}}
@@ -74,11 +74,11 @@ async function dispatch(m){
  for(let attempt=0;attempt<3;attempt++){
   const session=port,t=await target();await settled(t.id);
   const injected=await chrome.scripting.executeScript({target:{tabId:t.id},files:['observer.js']});
-  if(!ready||port!==session)throw Error('Vector disconnected during observation.');
+  if(!ready||port!==session)throw Error('Marketplace AI disconnected during observation.');
   const documentId=injected[0]?.documentId;
   let result;try{result=await chrome.scripting.executeScript({target:{tabId:t.id,...(documentId?{documentIds:[documentId]}:{})},func:()=>{try{return typeof globalThis.vectorObserve==='function'?globalThis.vectorObserve():null}catch(e){return {vectorObservationError:String(e.message||'Marketplace could not be read.')}}}})}catch(e){if(attempt===2)throw e;continue}
   const data=result[0]?.result,current=await chrome.tabs.get(t.id);
-  if(!ready||port!==session)throw Error('Vector disconnected during observation.');
+  if(!ready||port!==session)throw Error('Marketplace AI disconnected during observation.');
   if(data?.vectorObservationError)throw Error(data.vectorObservationError);
   if(data&&typeof data.url==='string'&&typeof data.text==='string'&&Array.isArray(data.nodes)&&Array.isArray(data.listings)&&data.url===current.url&&!current.pendingUrl){epoch++;data.epoch=epoch;observation={url:data.url,nodes:data.nodes,epoch};return m.method==='observeInbox'?{url:data.url,inboxRows:Array.isArray(data.inboxRows)?data.inboxRows:[],loading:Array.isArray(data.inboxLoading)?data.inboxLoading:(Array.isArray(data.loading)?data.loading:[]),inboxLoading:data.inboxLoading,visibility:data.visibility||'unknown'}:data;}
  }
@@ -104,7 +104,7 @@ async function dispatch(m){
   const current=(el.getAttribute('aria-label')||el.getAttribute('placeholder')||el.innerText||el.getAttribute('alt')||el.getAttribute('title')||el.name||el.tagName).trim().slice(0,220);if(current!==label)throw Error('Control changed. Observe again.');
   if(el.type==='password'||el.autocomplete?.includes('cc-')||el.autocomplete==='one-time-code')throw Error('Complete this field yourself.');
   if(upload){const input=el.type==='file'?el:document.querySelector('input[type="file"][accept*="image"]');if(!input)throw Error('Photo picker not found. Add your photo in Chrome.');const bytes=Uint8Array.from(atob(upload.split(',')[1]),c=>c.charCodeAt(0));const dt=new DataTransfer();dt.items.add(new File([bytes],'vector-item.jpg',{type:'image/jpeg'}));input.files=dt.files;input.dispatchEvent(new Event('change',{bubbles:true}));return {photoAttached:true}}
-  if(el.type==='file')throw Error('Attach a product photo in Vector first.');
+  if(el.type==='file')throw Error('Attach a product photo in Marketplace AI first.');
   if(args.action==='click'){el.click();return {acted:true}}
   if(args.action==='select'){if(el.tagName!=='SELECT')throw Error('Open the dropdown first.');el.value=args.value;el.dispatchEvent(new Event('change',{bubbles:true}));return {acted:true}}
   el.focus();if(el.isContentEditable){const value=String(args.value),selection=getSelection(),range=document.createRange();range.selectNodeContents(el);selection.removeAllRanges();selection.addRange(range);let inserted=false;try{inserted=document.execCommand('insertText',false,value)}catch{}if(!inserted)throw Error('Message composer did not accept text insertion. No message was sent.');await new Promise(resolve=>setTimeout(resolve,120));const currentEl=el.isConnected?el:document.activeElement,actual=(currentEl?.innerText||currentEl?.textContent||'').replace(/\u00a0/g,' ').trim();if(actual!==value.replace(/\u00a0/g,' ').trim())throw Error('Message composer did not accept the approved text. No message was sent.')}else{const proto=el.tagName==='TEXTAREA'?HTMLTextAreaElement.prototype:HTMLInputElement.prototype;const setter=Object.getOwnPropertyDescriptor(proto,'value')?.set;if(!setter)throw Error('Field is not editable.');setter.call(el,args.value);el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}))}return {acted:true}

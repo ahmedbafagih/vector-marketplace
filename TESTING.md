@@ -12,7 +12,7 @@ python3 scripts/privacy_check.py
 For the native self-test, use a separate data directory so your real workspace is not changed:
 
 ```sh
-VECTOR_DATA_DIR="$(mktemp -d)" build/Vector.app/Contents/MacOS/Vector --self-test
+VECTOR_DATA_DIR="$(mktemp -d)" "build/Marketplace AI.app/Contents/MacOS/Vector" --self-test
 ```
 
 The JavaScript suite uses simulated browser and AI responses. It sends no live Marketplace messages. The composer fixture checks DOM insertion, not Facebook's live controlled editor. Native self-tests cover local behavior, not real deal completion.

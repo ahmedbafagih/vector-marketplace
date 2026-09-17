@@ -4,8 +4,9 @@ set -euo pipefail
 SCRIPT_DIR=${0:A:h}
 REPO_DIR=${SCRIPT_DIR:h}
 INSTALL_DIR=${VECTOR_INSTALL_DIR:-"$HOME/Applications"}
-APP_PATH="$INSTALL_DIR/Vector.app"
-BUILD_APP="$REPO_DIR/build/Vector.app"
+APP_PATH="$INSTALL_DIR/Marketplace AI.app"
+LEGACY_APP_PATH="$INSTALL_DIR/Vector.app"
+BUILD_APP="$REPO_DIR/build/Marketplace AI.app"
 OPEN_AFTER_INSTALL=true
 TEST_DIR=""
 STAGE_DIR=""
@@ -18,7 +19,7 @@ cleanup() {
 trap cleanup EXIT
 
 fail() {
-  print -u2 "Vector setup stopped: $1"
+  print -u2 "Marketplace AI setup stopped: $1"
   exit 1
 }
 
@@ -31,7 +32,7 @@ if [[ -d /Library/Developer/CommandLineTools ]]; then
   export DEVELOPER_DIR=/Library/Developer/CommandLineTools
 fi
 
-print "Building Vector..."
+print "Building Marketplace AI..."
 cd "$REPO_DIR"
 python3 build.py
 
@@ -40,29 +41,38 @@ print "Checking the local build..."
 VECTOR_DATA_DIR="$TEST_DIR" "$BUILD_APP/Contents/MacOS/Vector" --self-test
 
 if pgrep -x Vector >/dev/null 2>&1; then
-  print "Closing the running Vector app before updating it..."
+  print "Closing the running Marketplace AI app before updating it..."
   osascript -e 'tell application id "com.ahmed.vector" to quit' >/dev/null 2>&1 || true
   for _ in {1..40}; do
     pgrep -x Vector >/dev/null 2>&1 || break
     sleep 0.25
   done
-  pgrep -x Vector >/dev/null 2>&1 && fail "Vector is still running. Quit it and run this installer again."
+  pgrep -x Vector >/dev/null 2>&1 && fail "Marketplace AI is still running. Quit it and run this installer again."
 fi
 
 mkdir -p "$INSTALL_DIR"
 STAGE_DIR=$(mktemp -d "$INSTALL_DIR/.vector-install.XXXXXX")
-STAGED_APP="$STAGE_DIR/Vector.app"
+STAGED_APP="$STAGE_DIR/Marketplace AI.app"
 ditto "$BUILD_APP" "$STAGED_APP"
 [[ -x "$STAGED_APP/Contents/MacOS/Vector" ]] || fail "the staged app could not be verified."
 
 BACKUP_APP=""
+BACKUP_ORIGINAL="$APP_PATH"
 if [[ -e "$APP_PATH" ]]; then
-  BACKUP_APP="$INSTALL_DIR/Vector.previous-$(date +%Y%m%d%H%M%S).app"
+  BACKUP_APP="$INSTALL_DIR/Marketplace AI.previous-$(date +%Y%m%d%H%M%S).app"
   mv "$APP_PATH" "$BACKUP_APP"
+elif [[ -e "$LEGACY_APP_PATH" && ! -L "$LEGACY_APP_PATH" ]]; then
+  BACKUP_ORIGINAL="$LEGACY_APP_PATH"
+  BACKUP_APP="$INSTALL_DIR/Vector.previous-$(date +%Y%m%d%H%M%S).app"
+  mv "$LEGACY_APP_PATH" "$BACKUP_APP"
 fi
 if ! mv "$STAGED_APP" "$APP_PATH"; then
-  [[ -n "$BACKUP_APP" && -e "$BACKUP_APP" ]] && mv "$BACKUP_APP" "$APP_PATH"
+  [[ -n "$BACKUP_APP" && -e "$BACKUP_APP" ]] && mv "$BACKUP_APP" "$BACKUP_ORIGINAL"
   fail "the new app could not be moved into place. The previous app was restored."
+fi
+# Keep existing unpacked Chrome installs working after the display-name change.
+if [[ ! -e "$LEGACY_APP_PATH" && ! -L "$LEGACY_APP_PATH" ]]; then
+  ln -s "Marketplace AI.app" "$LEGACY_APP_PATH"
 fi
 rmdir "$STAGE_DIR"
 STAGE_DIR=""
@@ -71,16 +81,16 @@ STAGE_DIR=""
 cmp -s "$REPO_DIR/Web/index.html" "$APP_PATH/Contents/Resources/index.html" || fail "the installed interface does not match this build."
 
 if $OPEN_AFTER_INSTALL; then
-  print "Opening Vector..."
+  print "Opening Marketplace AI..."
   open "$APP_PATH"
 fi
 
 cat <<EOF
 
-Vector is installed at:
+Marketplace AI is installed at:
 $APP_PATH
 
-Open Vector and complete its short setup guide. The guide opens the Chrome
+Open Marketplace AI and complete its short setup guide. The guide opens the Chrome
 companion listing, Marketplace, and the connection check in the right order.
 
 Until the Web Store review is complete, open Developer installation on the

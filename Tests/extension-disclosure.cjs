@@ -9,7 +9,10 @@ const onboarding=fs.readFileSync(path.join(root,'Web/onboarding.js'),'utf8');
 const native=fs.readFileSync(path.join(root,'Sources/main.swift'),'utf8');
 
 assert.equal(manifest.manifest_version,3);
-assert.equal(manifest.version,'0.2.30');
+assert.equal(manifest.name,'Marketplace AI');
+assert.equal(manifest.version,'0.2.31');
+assert.match(manifest.description,/Free, open source/);
+assert.match(manifest.description,/Floss and Pixel/);
 assert.deepEqual(manifest.host_permissions,[
  'https://www.facebook.com/*',
  'https://facebook.com/*',

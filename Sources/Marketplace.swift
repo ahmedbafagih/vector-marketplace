@@ -13,7 +13,7 @@ final class Marketplace {
         let ids=config["extensionIDs"] as! [String]
         let directory=FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/Application Support/Google/Chrome/NativeMessagingHosts")
         try FileManager.default.createDirectory(at:directory,withIntermediateDirectories:true)
-        let host:[String:Any]=["name":"com.vector.marketplace","description":"Vector local browser connection","path":Bundle.main.bundleURL.appendingPathComponent("Contents/MacOS/VectorChromeHost").path,"type":"stdio","allowed_origins":ids.map{"chrome-extension://"+$0+"/"}]
+        let host:[String:Any]=["name":"com.vector.marketplace","description":"Marketplace AI local browser connection","path":Bundle.main.bundleURL.appendingPathComponent("Contents/MacOS/VectorChromeHost").path,"type":"stdio","allowed_origins":ids.map{"chrome-extension://"+$0+"/"}]
         try JSONSerialization.data(withJSONObject:host,options:[.prettyPrinted]).write(to:directory.appendingPathComponent("com.vector.marketplace.json"),options:.atomic)
     }
     func permitted(_ value:String)->Bool {

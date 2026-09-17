@@ -1,6 +1,6 @@
 # Third-party notices
 
-The MIT license for Vector does not replace third-party licenses or grant trademark rights.
+The MIT license for Marketplace AI does not replace third-party licenses or grant trademark rights.
 
 | Component | Version | License |
 | --- | --- | --- |
@@ -10,4 +10,4 @@ The MIT license for Vector does not replace third-party licenses or grant tradem
 
 Original license texts accompany the bundled browser libraries. Node development dependencies are pinned in package-lock.json and retain their package licenses. The bundled SheetJS copy is older than current upstream releases; import only spreadsheets you trust while it remains under review.
 
-Codex, Claude, and Chrome icons identify the services a user connects. They are not covered by Vector's MIT license and remain the property of their owners. See Web/assets/PROVENANCE.md. No affiliation or endorsement is implied.
+Codex, Claude, and Chrome icons identify the services a user connects. They are not covered by Marketplace AI's MIT license and remain the property of their owners. See Web/assets/PROVENANCE.md. No affiliation or endorsement is implied.

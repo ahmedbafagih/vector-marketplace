@@ -13,7 +13,7 @@ s=s.replace("categories:['All']", "categories:['All']")
 s=s.replace("mode:'Auto-negotiate'", "mode:'Find only'")
 s=s.replace('https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js','vendor/d3.min.js').replace('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js','vendor/xlsx.full.min.js')
 s=s.replace('async src="vendor/xlsx','src="vendor/xlsx')
-s=s.replace('Demo · real photos','Local workspace').replace('CAD · Demo','CAD').replace('Marketplace desktop concept','Vector Marketplace workspace')
+s=s.replace('Demo · real photos','Local workspace').replace('CAD · Demo','CAD').replace('Marketplace desktop concept','Marketplace AI workspace')
 s=s.replace('Photo unavailable','Add photo').replace('Timing & follow-ups','Timing').replace("'AI replies'","'Replies sent'")
 s=s.replace("Math.max(...rows.map(x=>x.id))+1","Math.max(0,...rows.map(x=>x.id))+1").replace("Math.max(...rows.map(r=>r.id))+1","Math.max(0,...rows.map(r=>r.id))+1")
 s=s.replace("+photos[r.photo]+", "+esc(safeImageSource(photos[r.photo]))+")
@@ -29,12 +29,12 @@ s=s.replace("+l.id+", "+esc(l.id)+").replace("+l.state+", "+esc(l.state)+")
 s=s.replace('<style>','<style>\nbody{margin:0;background:#080f17}#marketplace-flight-deck{border-radius:0;min-height:100vh}#marketplace-flight-deck .native-jobs article{padding:14px 0;border-bottom:1px solid #263644}#marketplace-flight-deck .native-jobs span{display:block;color:#a0b3c2}#marketplace-flight-deck .mp-top{flex-wrap:wrap}\n',1)
 s=s.replace('<script src="vendor/d3.min.js">','<script src="vendor/lucide.min.js"></script>\n<script src="vendor/d3.min.js">')
 # Native bridges cannot be reached from the separate remote Marketplace webview.
-html='<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Vector</title></head><body>'+s+'<link rel="stylesheet" href="polish.css"></body></html>'
+html='<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Marketplace AI</title></head><body>'+s+'<link rel="stylesheet" href="polish.css"></body></html>'
 (ROOT/'Web/index.html').write_text(html)
-app=ROOT/'build/Vector.app';contents=app/'Contents';(contents/'MacOS').mkdir(parents=True,exist_ok=True)
+app=ROOT/'build/Marketplace AI.app';contents=app/'Contents';(contents/'MacOS').mkdir(parents=True,exist_ok=True)
 if (contents/'Resources').exists():shutil.rmtree(contents/'Resources')
 shutil.copytree(ROOT/'Web',contents/'Resources')
-plist={'CFBundleName':'Vector','CFBundleDisplayName':'Vector','CFBundleIdentifier':'com.ahmed.vector','CFBundleVersion':version,'CFBundleShortVersionString':version,'CFBundleExecutable':'Vector','CFBundlePackageType':'APPL','LSMinimumSystemVersion':'14.0','NSHighResolutionCapable':True,'NSPrincipalClass':'NSApplication','NSSupportsAutomaticTermination':False}
+plist={'CFBundleName':'Marketplace AI','CFBundleDisplayName':'Marketplace AI','CFBundleIdentifier':'com.ahmed.vector','CFBundleVersion':version,'CFBundleShortVersionString':version,'CFBundleExecutable':'Vector','CFBundlePackageType':'APPL','LSMinimumSystemVersion':'14.0','NSHighResolutionCapable':True,'NSPrincipalClass':'NSApplication','NSSupportsAutomaticTermination':False}
 (contents/'Info.plist').write_bytes(plistlib.dumps(plist))
 subprocess.run(['swiftc','-swift-version','5','-O','-framework','Cocoa','-framework','CoreLocation','-framework','MapKit','-framework','WebKit','-framework','ImageIO','-framework','UniformTypeIdentifiers','-framework','UserNotifications','-lsqlite3',str(ROOT/'Shared/Wire.swift'),*[str(p) for p in sorted((ROOT/'Sources').glob('*.swift'))],'-o',str(contents/'MacOS/Vector')],check=True)
 shutil.copytree(ROOT/'Extension',contents/'Resources/Extension',dirs_exist_ok=True)
@@ -43,8 +43,8 @@ subprocess.run(['codesign','--force','--deep','--sign','-',str(app)],check=True)
 # The unpacked companion keeps a fixed key so its developer-install ID remains stable.
 # Chrome Web Store assigns the published item ID and rejects a manifest key, so the
 # store archive contains the same reviewed files with only that field removed.
-archive=ROOT/'build'/f'Vector-Marketplace-Companion-{version}.zip'
-store_archive=ROOT/'build'/f'Vector-Marketplace-Companion-{version}-store.zip'
+archive=ROOT/'build'/f'Marketplace-AI-{version}.zip'
+store_archive=ROOT/'build'/f'Marketplace-AI-{version}-store.zip'
 files=sorted(p for p in (ROOT/'Extension').rglob('*') if p.is_file() and p.name!='.DS_Store')
 with zipfile.ZipFile(archive,'w',zipfile.ZIP_DEFLATED) as z:
     for p in files:z.write(p,p.relative_to(ROOT/'Extension'))

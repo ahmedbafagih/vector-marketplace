@@ -2,9 +2,9 @@ async function refresh(){
  const saved=await chrome.storage.local.get(['status']);
  let live={connected:false,tabConnected:false};try{live=await chrome.runtime.sendMessage({action:'status'})||live}catch{}
  const connect=document.getElementById('connect'),disconnect=document.getElementById('disconnect');
- if(live.connected&&live.tabConnected){document.getElementById('status').textContent='Connected to Vector. Marketplace is ready.';connect.textContent='Connected';connect.disabled=true;disconnect.hidden=false}
- else if(live.connected){document.getElementById('status').textContent='Vector is connected. Open Marketplace to continue.';connect.textContent='Open Marketplace';connect.disabled=false;disconnect.hidden=false}
- else{document.getElementById('status').textContent=saved.status||'Open Vector to connect.';connect.textContent='Connect Marketplace';connect.disabled=false;disconnect.hidden=true}
+ if(live.connected&&live.tabConnected){document.getElementById('status').textContent='Connected to Marketplace AI. Marketplace is ready.';connect.textContent='Connected';connect.disabled=true;disconnect.hidden=false}
+ else if(live.connected){document.getElementById('status').textContent='Marketplace AI is connected. Open Marketplace to continue.';connect.textContent='Open Marketplace';connect.disabled=false;disconnect.hidden=false}
+ else{document.getElementById('status').textContent=saved.status||'Open Marketplace AI to connect.';connect.textContent='Connect Marketplace';connect.disabled=false;disconnect.hidden=true}
 }
 refresh();chrome.storage.onChanged.addListener(refresh);
 document.querySelector('h1').title='Version '+chrome.runtime.getManifest().version;

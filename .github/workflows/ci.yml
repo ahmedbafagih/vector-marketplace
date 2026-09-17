@@ -20,14 +20,14 @@ jobs:
       - run: python3 build.py
       - run: npm test
       - name: Native self-test
-        run: VECTOR_DATA_DIR="$(mktemp -d)" build/Vector.app/Contents/MacOS/Vector --self-test
+        run: VECTOR_DATA_DIR="$(mktemp -d)" "build/Marketplace AI.app/Contents/MacOS/Vector" --self-test
       - name: Package preview
-        run: ditto -c -k --sequesterRsrc --keepParent build/Vector.app build/Vector-macOS-preview.zip
+        run: ditto -c -k --sequesterRsrc --keepParent "build/Marketplace AI.app" build/Marketplace-AI-macOS-preview.zip
       - uses: actions/upload-artifact@v4
         with:
-          name: Vector-macOS-testing-preview
+          name: Marketplace-AI-macOS-testing-preview
           path: |
-            build/Vector-macOS-preview.zip
-            build/Vector-Marketplace-Companion-*.zip
+            build/Marketplace-AI-macOS-preview.zip
+            build/Marketplace-AI-*.zip
             build/release.json
           retention-days: 14
