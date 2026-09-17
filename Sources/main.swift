@@ -66,7 +66,7 @@ final class App: NSObject, NSApplicationDelegate, WKScriptMessageHandler, WKUIDe
     }
     func webView(_ webView:WKWebView,runOpenPanelWith parameters:WKOpenPanelParameters,initiatedByFrame frame:WKFrameInfo,completionHandler:@escaping([URL]?)->Void){let panel=NSOpenPanel();panel.allowsMultipleSelection=parameters.allowsMultipleSelection;panel.canChooseDirectories=false;panel.begin{completionHandler($0 == .OK ? panel.urls:nil)}}
     func routeDistance(from:String,to:String,completion:@escaping(Result<Any,Error>)->Void){
-        geocode(from){originResult in do{let origin=try originResult.get();self.geocode(to){destinationResult in do{let destination=try destinationResult.get();let request=MKDirections.Request();if #available(macOS 26.0, *){request.source=MKMapItem(location:origin,address:nil);request.destination=MKMapItem(location:destination,address:nil)}else{request.source=MKMapItem(placemark:MKPlacemark(coordinate:origin.coordinate));request.destination=MKMapItem(placemark:MKPlacemark(coordinate:destination.coordinate))};request.transportType = .automobile
+        geocode(from){originResult in do{let origin=try originResult.get();self.geocode(to){destinationResult in do{let destination=try destinationResult.get();let request=MKDirections.Request();request.source=MKMapItem(placemark:MKPlacemark(coordinate:origin.coordinate));request.destination=MKMapItem(placemark:MKPlacemark(coordinate:destination.coordinate));request.transportType = .automobile
                     MKDirections(request:request).calculate{response,_ in let routeKm=response?.routes.first.map{$0.distance/1000};let straightKm=origin.distance(from:destination)/1000;let km=routeKm ?? straightKm;completion(.success(["distanceKm":(km*10).rounded()/10,"method":routeKm == nil ? "straight-line" : "driving"]))}
                 }catch{completion(.failure(self.locationError(error,origin:false)))}}}catch{completion(.failure(self.locationError(error,origin:true)))}}
     }
@@ -85,8 +85,7 @@ final class App: NSObject, NSApplicationDelegate, WKScriptMessageHandler, WKUIDe
             guard specific else {completion(.failure(VectorError(message:"The location identifies only a broad area.")));return}
             if let location=mark.location {completion(.success(location))} else {completion(.failure(error ?? VectorError(message:"The address could not be located.")))}
         }
-        if #available(macOS 26.0, *){guard let request=MKGeocodingRequest(addressString:address) else{completion(.failure(VectorError(message:"The address could not be located.")));return};request.getMapItems{items,error in if let item=items?.first{accept(item.placemark,error)}else{completion(.failure(error ?? VectorError(message:"The address could not be located.")))}}}
-        else{let coder=CLGeocoder();coder.geocodeAddressString(address){marks,error in if let mark=marks?.first{accept(mark,error)}else{completion(.failure(error ?? VectorError(message:"The address could not be located.")))}}}
+        let coder=CLGeocoder();coder.geocodeAddressString(address){marks,error in if let mark=marks?.first{accept(mark,error)}else{completion(.failure(error ?? VectorError(message:"The address could not be located.")))}}
     }
     func userNotificationCenter(_ center:UNUserNotificationCenter,willPresent notification:UNNotification,withCompletionHandler completionHandler:@escaping(UNNotificationPresentationOptions)->Void){completionHandler([.banner])}
     func userNotificationCenter(_ center:UNUserNotificationCenter,didReceive response:UNNotificationResponse,withCompletionHandler completionHandler:@escaping()->Void){
