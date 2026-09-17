@@ -4,6 +4,8 @@ Effective September 10, 2026.
 
 Vector Marketplace Companion connects a Facebook Marketplace tab in Chrome to the Vector desktop app on your computer. It does not operate independently of the desktop app.
 
+Before the extension reads Marketplace data, its popup explains the data flow and asks you to choose **Connect Marketplace**. You can decline by closing the popup, and you can disconnect at any time.
+
 ## Data used
 
 When you connect the extension and run a workflow in Vector, the extension reads visible Marketplace listing details, listing photos, page controls and relevant conversation text. It sends these observations to the local desktop app using Chrome Native Messaging. The app uses them to perform the inventory, discovery, listing or conversation task you enabled.
@@ -25,3 +27,7 @@ Facebook host access and scripting allow the extension to read and operate the c
 ## Scope
 
 The extension has no Vector cloud backend. Facebook and the chosen AI provider still process data involved in their respective services. Neither Google, Meta, OpenAI nor Anthropic sponsors or endorses Vector.
+
+## Limited use
+
+Vector uses Marketplace data only to provide the inventory, sourcing, listing, conversation, and pickup features the user enables. It does not use or transfer this data for personalized advertising, credit decisions, data brokerage, or unrelated purposes. No Vector employee or contributor receives access to a user's Marketplace data through a Vector service. A user may deliberately provide a specific record when requesting support, but Vector has no automatic support upload.

@@ -1,6 +1,6 @@
 # Install Vector
 
-Vector currently supports macOS 14 or newer. The local installer builds the app, runs a storage self check, installs it in `~/Applications`, opens Vector, and opens the bundled Chrome companion folder.
+Vector currently supports macOS 14 or newer. The local installer builds the app, runs a storage self check, installs it in `~/Applications`, and opens Vector.
 
 ## Fast setup
 
@@ -14,13 +14,15 @@ The installer does not need administrator access. It uses Apple Command Line Too
 
 For automated QA without opening Vector, Finder, or Chrome, use `./scripts/install-local.sh --no-open`.
 
-Chrome requires one manual security step for an unpacked extension:
+The setup guide opens the Vector Marketplace Companion in the Chrome Web Store. Choose **Add to Chrome**, open Marketplace, open the Vector companion, review its disclosure, and choose **Connect Marketplace**. Chrome always requires the user to approve an extension installation.
+
+Until the Web Store review is complete, use the setup guide's **Developer installation** fallback:
 
 1. Open `chrome://extensions`.
 2. Turn on Developer mode.
 3. Choose **Load unpacked**.
 4. Select `~/Applications/Vector.app/Contents/Resources/Extension`.
-5. Open the Vector companion and choose **Connect Marketplace**.
+5. Open the Vector companion, review its disclosure, and choose **Connect Marketplace**.
 
 Vector then presents a short setup guide. It asks for:
 
@@ -36,9 +38,9 @@ Vector starts its first search only after both connections pass. The default per
 
 Give an AI coding agent this instruction:
 
-> Open this repository, read `AGENTS.md`, run `./scripts/install-local.sh`, and report only the Chrome step that still requires me. Do not copy credentials or browser data. After I load the extension, verify both connections in Vector and help me complete the setup guide.
+> Open this repository, read `AGENTS.md`, and run `./scripts/install-local.sh`. Let Vector open the Chrome Web Store companion. Ask me only to approve Add to Chrome and Connect Marketplace. Do not copy credentials or browser data. Then verify both connections in Vector and help me complete the setup guide. If the store listing is not yet available, use the setup guide's Developer installation fallback.
 
-The only unavoidable manual step is Chrome's **Load unpacked** selection. Chrome does not allow a local app or coding agent to silently install a developer extension.
+The unavoidable manual step is Chrome's extension approval. Chrome does not allow a local app or coding agent to silently approve **Add to Chrome**. The unpacked fallback additionally requires **Load unpacked**.
 
 ## Updating an existing install
 
@@ -47,4 +49,3 @@ Run the same command again. The installer closes Vector, rebuilds it, verifies t
 ## Remove Vector
 
 Quit Vector, remove `~/Applications/Vector.app`, remove the Vector companion from Chrome, and optionally remove `~/Library/Application Support/Vector` if you also want to delete the local workspace and backups.
-

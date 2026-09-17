@@ -71,12 +71,8 @@ STAGE_DIR=""
 cmp -s "$REPO_DIR/Web/index.html" "$APP_PATH/Contents/Resources/index.html" || fail "the installed interface does not match this build."
 
 if $OPEN_AFTER_INSTALL; then
-  print "Opening Vector and the Chrome extension setup..."
+  print "Opening Vector..."
   open "$APP_PATH"
-  open "$APP_PATH/Contents/Resources/Extension"
-  if [[ -d "/Applications/Google Chrome.app" ]] || [[ -d "$HOME/Applications/Google Chrome.app" ]]; then
-    open -a "Google Chrome" "chrome://extensions" || true
-  fi
 fi
 
 cat <<EOF
@@ -84,12 +80,9 @@ cat <<EOF
 Vector is installed at:
 $APP_PATH
 
-One Chrome step remains:
-1. On chrome://extensions, turn on Developer mode.
-2. Choose Load unpacked.
-3. Select the Extension folder that Finder opened.
-4. Open the Vector companion and choose Connect Marketplace.
+Open Vector and complete its short setup guide. The guide opens the Chrome
+companion listing, Marketplace, and the connection check in the right order.
 
-Then return to Vector and complete the short setup guide.
+Until the Web Store review is complete, open Developer installation on the
+connection screen for the bundled unpacked extension.
 EOF
-

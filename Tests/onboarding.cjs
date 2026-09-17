@@ -22,7 +22,15 @@ const context=vm.createContext({
 context.globalThis=context;
 vm.runInContext(fs.readFileSync(path.join(__dirname,'../Web/onboarding.js'),'utf8'),context);
 const qa=context.vectorOnboardingQA;
+const fresh=qa.defaults();
 
+assert.equal(fresh.targets,'');
+assert.equal(fresh.radius,35);
+assert.equal(fresh.maxPrice,300);
+assert.equal(fresh.budget,2000);
+assert.equal(fresh.minProfit,35);
+assert.equal(fresh.minROI,30);
+assert.equal(fresh.mode,'Find only');
 assert.equal(qa.choiceValue('radius','35'),35);
 assert.equal(typeof qa.choiceValue('radius','35'),'number');
 assert.equal(qa.choiceValue('mode','Find only'),'Find only');
@@ -41,7 +49,8 @@ assert.equal(context.maxPrice,300);
 assert.equal(context.minProfit,35);
 assert.equal(auto.mode,'Find only');
 assert.equal(auto.maxOffer,300);
-assert.equal(nativeState.onboardingVersion,1);
+assert.equal(nativeState.onboardingVersion,2);
+assert.match(vm.runInContext('VECTOR_COMPANION_STORE_URL',context),/^https:\/\/chromewebstore\.google\.com\/detail\//);
 assert.equal(nativeState.connected,true);
 assert.equal(laneEnabled.Buying,true);
 assert.equal(laneEnabled.Selling,true);

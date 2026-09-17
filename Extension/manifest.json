@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Vector Marketplace Companion",
-  "version": "0.2.29",
+  "version": "0.2.30",
   "description": "Connect Facebook Marketplace in Chrome to your local Vector inventory and AI workspace. Requires the Vector desktop app.",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxia/tc+roDqC6euQ9OfimhFvaXNpJ5sb6ejYvv9r0tf92hWJ7aimUwBawhPN9f3U0PtrQMVXkH+QfULhUcAXURxR4TPojByWy0lnfF5gQcY1AAw9rs+Pb5VPdf/Abf+ovhN0Y3bMIItV459L8m/GbrV9U1slOBWac0HVMDAUc/2Zb9WAdtHoh1briBSA/M7ntrsa1Amp9vj8KxALk7C+VrHn/SM4J3CwqnEwcIXfN0BfGIQheM9HOHgRtqHhT9yg6vX7k8wgJRHDWNGZEggkzFbfJp6SlBIM9L5kZC6klEb7YDHvNLd4/el4k6UeYdSvGTat4GrGNkUR4XO/FhCGRwIDAQAB",
   "permissions": [

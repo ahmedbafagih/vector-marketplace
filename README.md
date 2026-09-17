@@ -2,7 +2,7 @@
 
 A local macOS workspace for Marketplace sourcing, inventory, selling conversations, and pickup coordination. Bring your own Facebook session and supported Codex or Claude Code CLI.
 
-**Status: testing preview, version 0.2.29.** This is open source software for supervised testing. Browser automation depends on Facebook's interface. A complete automated negotiation through confirmed pickup has not yet been demonstrated for this release. It is not a production reliability or earnings guarantee.
+**Status: testing preview, version 0.2.30.** This is open source software for supervised testing. Browser automation depends on Facebook's interface. A complete automated negotiation through confirmed pickup has not yet been demonstrated for this release. It is not a production reliability or earnings guarantee.
 
 ## What it does
 
@@ -34,7 +34,7 @@ cd vector-marketplace
 ./scripts/install-local.sh
 ```
 
-The installer builds and checks Vector, installs it in `~/Applications`, and opens the app plus its bundled Chrome companion folder. It does not need administrator access. Chrome still requires one manual **Load unpacked** step because the companion is not in the Chrome Web Store. See [INSTALL.md](INSTALL.md) for the exact human steps and a ready-to-paste AI coding agent prompt.
+The installer builds and checks Vector, installs it in `~/Applications`, and opens the app. It does not need administrator access. The setup guide opens the Chrome Web Store companion and verifies the connection. Until the store review is complete, testers can use the clearly labeled developer installation in [INSTALL.md](INSTALL.md).
 
 To build and test without installing:
 

@@ -1,20 +1,22 @@
-const VECTOR_ONBOARDING_VERSION=1;
+const VECTOR_ONBOARDING_VERSION=2;
+const VECTOR_COMPANION_STORE_URL='https://chromewebstore.google.com/detail/vector-marketplace-companion/elkhmobmkaiepgennfgabmbolldjlmpb';
 let vectorOnboarding=null;
 
 function vectorSetupDefaults(){
  const policy=typeof sourcingPolicy==='function'?sourcingPolicy():{};
+ const fresh=!nativeState.onboardingVersion;
  return {
   step:0,
   review:false,
-  targets:Array.isArray(policy.targets)?policy.targets.join('\n'):'',
+  targets:fresh?'':Array.isArray(policy.targets)?policy.targets.join('\n'):'',
   city:String(policy.city||intakePolicy.location||'Toronto, ON'),
   originAddress:String(policy.originAddress||''),
-  radius:Number(radius)||35,
-  maxPrice:Number(maxPrice)||300,
-  budget:Number(auto.budget)||2000,
-  minProfit:Number(minProfit)||35,
-  minROI:Number(policy.minROI)||30,
-  mode:auto.mode==='Auto-negotiate'?'Auto-negotiate':'Find only',
+  radius:fresh?35:Number(radius)||35,
+  maxPrice:fresh?300:Number(maxPrice)||300,
+  budget:fresh?2000:Number(auto.budget)||2000,
+  minProfit:fresh?35:Number(minProfit)||35,
+  minROI:fresh?30:Number(policy.minROI)||30,
+  mode:fresh?'Find only':auto.mode==='Auto-negotiate'?'Auto-negotiate':'Find only',
   outsideRange:policy.outsideRange==='reject'?'reject':'review',
   provider:nativeState.provider||'Codex',
   aiReady:false,
@@ -57,7 +59,7 @@ function vectorSetupBody(step){const d=vectorOnboarding;
  if(step===2)return '<div class="vx-onboarding-grid"><label class="vx-onboarding-field">Search area<input name="city" value="'+esc(d.city)+'" placeholder="Toronto, ON"><span>Use the city or region shown by Marketplace.</span></label><label class="vx-onboarding-field">Pickup starting point<input name="originAddress" value="'+esc(d.originAddress)+'" placeholder="Street address or postal code"><span>Used only for pickup distance calculations.</span></label></div><div class="vx-onboarding-distance" role="group" aria-label="Search distance">'+vectorSetupChoice('radius',5,'5 km','Very local, fewer listings')+vectorSetupChoice('radius',15,'15 km','Nearby, moderate selection')+vectorSetupChoice('radius',35,'35 km','More results without a long drive',true)+'</div><label class="vx-onboarding-field vx-onboarding-custom">Custom distance, km<input name="radius" type="number" min="1" max="500" value="'+d.radius+'"></label><div class="vx-onboarding-row">'+vectorSetupChoice('outsideRange','review','Let me review','Keep distant deals for my decision',true)+vectorSetupChoice('outsideRange','reject','Pass automatically','Close deals outside my limit')+'</div>';
  if(step===3)return '<div class="vx-onboarding-money"><label class="vx-onboarding-field">Most to pay for one item<span class="vx-onboarding-currency">$<input name="maxPrice" type="number" min="1" value="'+d.maxPrice+'"></span><small>CAD per purchase</small></label><label class="vx-onboarding-field">Accepted deal limit<span class="vx-onboarding-currency">$<input name="budget" type="number" min="50" value="'+d.budget+'"></span><small>Only accepted deals awaiting pickup count</small></label><label class="vx-onboarding-field">Minimum profit<span class="vx-onboarding-currency">$<input name="minProfit" type="number" min="0" value="'+d.minProfit+'"></span><small>After expected costs</small></label><label class="vx-onboarding-field">Minimum return<span class="vx-onboarding-currency"><input name="minROI" type="number" min="0" max="500" value="'+d.minROI+'">%</span><small>Compared with purchase price</small></label></div><div class="vx-onboarding-tip"><strong>Negotiations do not reserve your budget</strong><span>Vector counts money only after a deal is accepted and waiting for pickup.</span></div>';
  if(step===4)return '<div class="vx-onboarding-stack">'+vectorSetupChoice('mode','Find only','Find and review','Vector researches deals and waits for you before contacting anyone.',true)+vectorSetupChoice('mode','Auto-negotiate','Find and contact sellers','Vector may send messages only when price, distance, and profit rules pass.')+'</div><div class="vx-onboarding-tip"><strong>You can change this anytime</strong><span>Buying and selling have separate switches that stay visible at the top of the app.</span></div>';
- if(step===5)return '<div class="vx-onboarding-provider" role="group" aria-label="AI provider">'+vectorSetupChoice('provider','Codex','Codex','Use your signed in Codex CLI')+vectorSetupChoice('provider','Claude Code','Claude Code','Use your signed in Claude Code CLI')+'</div><div class="vx-onboarding-connections"><article data-ready="'+d.aiReady+'"><span class="vx-onboarding-status"></span><div><strong>'+esc(d.provider)+'</strong><small>'+(d.aiReady?'AI connection verified':'Sign in to the official CLI on this Mac')+'</small></div></article><article data-ready="'+d.chromeReady+'"><span class="vx-onboarding-status"></span><div><strong>Chrome companion</strong><small>'+(d.chromeReady?'Marketplace connection verified':'Load the bundled extension and open Marketplace')+'</small></div></article></div><div class="vx-onboarding-connect-actions"><button type="button" class="mp-small-button" id="vx-onboarding-extension">Show extension folder</button><button type="button" class="mp-small-button" id="vx-onboarding-marketplace">Open Marketplace</button><button type="button" class="mp-action" id="vx-onboarding-check"'+(d.checking?' disabled':'')+'>'+(d.checking?'Checking…':'Check both connections')+'</button></div>';
+ if(step===5)return '<div class="vx-onboarding-provider" role="group" aria-label="AI provider">'+vectorSetupChoice('provider','Codex','Codex','Use your signed in Codex CLI')+vectorSetupChoice('provider','Claude Code','Claude Code','Use your signed in Claude Code CLI')+'</div><div class="vx-onboarding-connections"><article data-ready="'+d.aiReady+'"><span class="vx-onboarding-status"></span><div><strong>'+esc(d.provider)+'</strong><small>'+(d.aiReady?'AI connection verified':'Sign in to the official CLI on this Mac')+'</small></div></article><article data-ready="'+d.chromeReady+'"><span class="vx-onboarding-status"></span><div><strong>Chrome companion</strong><small>'+(d.chromeReady?'Marketplace connection verified':'Install it, open Marketplace, then connect')+'</small></div></article></div><ol class="vx-onboarding-install"><li data-done="'+d.chromeReady+'"><span>1</span><div><strong>Install the companion</strong><small>Chrome handles installation and automatic updates.</small></div><button type="button" class="mp-small-button" id="vx-onboarding-store">'+(d.chromeReady?'Installed':'Add to Chrome')+'</button></li><li data-done="'+d.chromeReady+'"><span>2</span><div><strong>Open Marketplace and connect</strong><small>Open the Vector icon in Chrome, review its disclosure, then choose Connect Marketplace.</small></div><button type="button" class="mp-small-button" id="vx-onboarding-marketplace">Open Marketplace</button></li><li data-done="'+(d.aiReady&&d.chromeReady)+'"><span>3</span><div><strong>Verify everything</strong><small>Vector checks the AI runtime, native helper, companion, and Marketplace tab.</small></div><button type="button" class="mp-action" id="vx-onboarding-check"'+(d.checking?' disabled':'')+'>'+(d.checking?'Checking…':'Check connections')+'</button></li></ol><details class="vx-onboarding-manual"><summary>Developer installation</summary><p>Use the bundled unpacked extension only when testing source code before a Web Store release.</p><button type="button" class="mp-small-button" id="vx-onboarding-extension">Show unpacked extension folder</button></details>';
  return '<div class="vx-onboarding-summary"><span><small>Find</small><strong>'+esc(normalizeSourcingTargets(d.targets).slice(0,3).join(', '))+'</strong></span><span><small>Area</small><strong>'+esc(d.city)+' · '+d.radius+' km</strong></span><span><small>Limits</small><strong>'+money(d.maxPrice)+' per item · '+money(d.minProfit)+' profit</strong></span><span><small>Permission</small><strong>'+(d.mode==='Auto-negotiate'?'Find and contact sellers':'Find and review only')+'</strong></span><span><small>Connections</small><strong>'+esc(d.provider)+' and Chrome ready</strong></span></div><div class="vx-onboarding-tip"><strong>Vector starts with one safe search</strong><span>You can watch every result in Discover and change these rules from Buying settings.</span></div>';
 }
 
@@ -69,6 +71,7 @@ function renderVectorOnboarding(){
  const back=document.getElementById('vx-onboarding-back');back.onclick=()=>{vectorSetupCapture();vectorOnboarding.message='';vectorOnboarding.step--;renderVectorOnboarding()};
  const next=document.getElementById('vx-onboarding-next');next.onclick=()=>{const error=vectorSetupValidate(step);if(error){vectorSetupError(error);return}if(step===6){finishVectorOnboarding();return}vectorOnboarding.message='';vectorOnboarding.step++;renderVectorOnboarding()};
  document.getElementById('vx-onboarding-extension')?.addEventListener('click',()=>nativeCall('showExtension').catch(e=>vectorSetupError(e.message)));
+ document.getElementById('vx-onboarding-store')?.addEventListener('click',()=>nativeCall('openCompanionStore',{url:VECTOR_COMPANION_STORE_URL}).catch(e=>vectorSetupError(e.message)));
  document.getElementById('vx-onboarding-marketplace')?.addEventListener('click',()=>nativeCall('openMarketplace').catch(e=>vectorSetupError(e.message)));
  document.getElementById('vx-onboarding-check')?.addEventListener('click',checkVectorOnboardingConnections);
  el.querySelector('textarea,input')?.focus({preventScroll:true});

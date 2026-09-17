@@ -10,10 +10,11 @@ Take a cloned Vector repository to a verified local macOS install with the fewes
 2. Never request or inspect Facebook cookies, saved passwords, browser profiles, API keys, or subscription tokens.
 3. Run `./scripts/install-local.sh` from the repository root.
 4. Confirm the installer reports a passing native self check and that `~/Applications/Vector.app` exists.
-5. Ask the user to perform only the Chrome security step: enable Developer mode, choose Load unpacked, and select `~/Applications/Vector.app/Contents/Resources/Extension`.
-6. After the user connects the companion, use Vector's setup guide to verify the selected AI runtime and Chrome connection.
-7. Help the user answer the setup guide using their actual buying limits. Do not invent an address, budget, profit target, or permission to contact sellers.
-8. Confirm the app shows the Discover workspace and a queued first search.
+5. Use the setup guide to open the companion's Chrome Web Store listing. Ask the user only to approve **Add to Chrome**, review the popup disclosure, and choose **Connect Marketplace**.
+6. If the listing is unavailable during store review, open **Developer installation**, then ask the user to enable Developer mode, choose Load unpacked, and select `~/Applications/Vector.app/Contents/Resources/Extension`.
+7. After the user connects the companion, use Vector's setup guide to verify the selected AI runtime and Chrome connection.
+8. Help the user answer the setup guide using their actual buying limits. Do not invent an address, budget, profit target, or permission to contact sellers.
+9. Confirm the app shows the Discover workspace and a queued first search.
 
 ## Safe defaults
 
@@ -37,5 +38,4 @@ VECTOR_DATA_DIR=/tmp/vector-install-check build/Vector.app/Contents/MacOS/Vector
 ```
 
 For source changes, also run `npm test`. Do not claim Marketplace automation is production proven from local tests alone. Live reliability requires observed Marketplace runs because Facebook can change its interface.
-
 
